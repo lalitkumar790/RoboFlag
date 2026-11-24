@@ -25,3 +25,13 @@ def test_cycle_penalty_is_conditional():
     assert cycle_penalty([(0,0),(1,0)])==0
     assert cycle_penalty([(0,0),(1,0),(0,0)])==3
     assert cycle_penalty([(0,0),(1,0),(0,0),(0,1),(0,2),(1,2),(2,2),(3,2),(4,2)])==0
+
+
+def test_deadline_penalty_fades_with_slack():
+    from roboflag.physics_dynamic_fleet import deadline_penalty
+    history=[(0,0),(1,0),(0,0)]
+    assert deadline_penalty(history,(2,0),82)==3
+    assert deadline_penalty(history,(2,0),52)==1.5
+    assert deadline_penalty(history,(2,0),22)==0
+    assert deadline_penalty(history,(2,0),0)==0
+    assert deadline_penalty([(0,0),(1,0)],(2,0),300)==0

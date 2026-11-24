@@ -42,8 +42,15 @@ def cycle_penalty(history):
     recent=history[-7:]
     return 3. if any(recent[j]==recent[j-2] for j in range(2,len(recent))) else 0.
 
+def deadline_penalty(history,goal,remaining_s):
+    # Heuristic time reserve: five seconds per remaining Manhattan edge,
+    # plus one full barrier. Fade the cycle penalty when slack is scarce.
+    distance=sum(abs(a-b) for a,b in zip(history[-1],goal))
+    slack=remaining_s-5.*distance-12.
+    return cycle_penalty(history)*max(0.,min(1.,slack/60.))
+
 def simulate(seed,count,strategy,deadline=300.):
-    if strategy not in ("congestion_aware","progress_aware","reversal_aware","cycle_aware"):raise ValueError(strategy)
+    if strategy not in ("congestion_aware","progress_aware","reversal_aware","cycle_aware","deadline_aware"):raise ValueError(strategy)
     width,height,walls,missions,_=scenario(seed,count)
     m,d=build(seed,count)
     mocap=int(m.body("fleet_cart").mocapid[0])
@@ -62,9 +69,9 @@ def simulate(seed,count,strategy,deadline=300.):
         for j in range(count):
             i=(tick-1+j)%count
             if completed[i] is not None:continue
-            if strategy=="cycle_aware":
+            if strategy in ("cycle_aware","deadline_aware"):
                 history=histories[i]
-                penalty=cycle_penalty(history)
+                penalty=deadline_penalty(history,goals[i],deadline-float(d.time)) if strategy=="deadline_aware" else cycle_penalty(history)
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(history[:-1]),previous_cell=history[-2] if len(history)>1 else None,reversal_penalty=penalty)
             elif strategy=="reversal_aware":
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]),previous_cell=histories[i][-2] if len(histories[i])>1 else None,reversal_penalty=3.)
@@ -105,6 +112,7 @@ def simulate(seed,count,strategy,deadline=300.):
 
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--robots",type=int,default=6);p.add_argument("--seed",type=int,default=4600)
-    p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware","cycle_aware"],default=["congestion_aware","progress_aware"])
+    p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware","cycle_aware","deadline_aware"],default=["congestion_aware","progress_aware"])
+    p.add_argument("--deadline",type=float,default=300.)
     a=p.parse_args()
-    print(json.dumps([simulate(a.seed,a.robots,s) for s in a.modes]))
+    print(json.dumps([simulate(a.seed,a.robots,s,a.deadline) for s in a.modes]))
