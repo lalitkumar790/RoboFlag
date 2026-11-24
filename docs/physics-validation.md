@@ -7,3 +7,6 @@ Next gate: closed-loop heading and waypoint tracking; then paired multi-robot sc
 
 ## First observed failure
 Run 45492670704: native model compiled; commanded 0.35 m/s for one second yielded 0.0358701 m, below the unchanged 0.10 m acceptance floor. Lateral drift 0.0000503 m, braking displacement 0.0001071 m, zero external contacts. Hypothesis: equal-priority ground and caster friction mixing gives the nominally low-friction support the floor friction. Explicit tire/caster geom priority isolates their intended friction; add wheel velocity, actuator force and effective contact friction diagnostics. This is a hypothesis under test, not a confirmed fix. Preserve smoke artifact on failure.
+
+## Corrected smoke and tracking gate
+Run 45492807410 passed both smoke tests: displacement 0.3256653 m, drift 0.0019556 m, braking 0.0150712 m, zero external contact pairs. Effective caster/tire friction 0.005/1.2. Next development test uses a 1 m cardinal square at seed 4000, common closed-loop heading gate, proportional velocity, 50 mm settling tolerance, 12 s timeout per waypoint, native contact episodes and absolute actuator mechanical work proxy. This is a development scenario, not a holdout or hardware energy measurement. No native experiment traffic. Run python -m roboflag.physics_tracking for trace and results.
