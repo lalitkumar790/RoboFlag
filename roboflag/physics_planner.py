@@ -4,7 +4,8 @@ from heapq import heappop, heappush
 
 DIRECTIONS=((1,0),(0,1),(-1,0),(0,-1))
 
-def plan_physics(start,goal,width,height,walls,congestion,occupied,yaw):
+def plan_physics(start,goal,width,height,walls,congestion,occupied,yaw,visits=None):
+    visits=visits or {}
     walls=set(walls)
     occupied=set(occupied)-{start}
     heading=int(round(yaw/(math.pi/2)))%4
@@ -30,7 +31,7 @@ def plan_physics(start,goal,width,height,walls,congestion,occupied,yaw):
             if state==initial and q in occupied:continue
             turns=min((k-h)%4,(h-k)%4)
             # Provisional dimensionless weights, not calibrated energy estimates.
-            new=cost+1+0.35*congestion.get(q,0)+0.6*turns
+            new=cost+1+0.35*congestion.get(q,0)+0.6*turns+2.0*visits.get(q,0)
             nxt=(q,k)
             if new<costs.get(nxt,float("inf")):
                 costs[nxt]=new;parents[nxt]=state

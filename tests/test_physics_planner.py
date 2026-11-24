@@ -10,3 +10,8 @@ def test_heading_prefers_straight():
 
 def test_no_route():
     assert plan_physics((0,0),(2,0),3,1,{(1,0)},{},set(),0)==[]
+
+
+def test_progress_penalty_avoids_repeated_cell():
+    p=plan_physics((0,0),(2,0),3,3,set(),{},set(),0, {(1,0):10})
+    assert p[1]==(0,1) and p[-1]==(2,0)
