@@ -18,6 +18,7 @@ def simulate_physics(seed=4100,count=6,strategy="astar",horizon=100):
     m,d=build(seed,count)
     cells=[s for s,g in missions]
     goals=[g for s,g in missions]
+    histories=[[s] for s in cells]
     completed=[None]*count
     waits=[0]*count
     steps=[0]*count
@@ -66,10 +67,15 @@ def simulate_physics(seed=4100,count=6,strategy="astar",horizon=100):
             break
         for i,target in enumerate(targets):
             steps[i]+=int(target!=cells[i])
+            if target!=cells[i]:histories[i].append(target)
             cells[i]=target
             if completed[i] is None and cells[i]==goals[i]:completed[i]=float(d.time)
         if all(t is not None for t in completed):break
-    return {"seed":seed,"robots":count,"strategy":strategy,"engine":mujoco.__version__,"static_obstacles_only":True,"successes":sum(t is not None for t in completed),"completion_rate":sum(t is not None for t in completed)/count,"mission_completion_seconds":completed,"simulated_seconds":float(d.time),"blocked_proposals":blocked,"external_contact_episodes":episodes,"actuator_work_proxy_j":work,"tracking_failure":tracking_failure,"steps":steps,"waits":waits,"trace":trace}
+    diagnostics=[]
+    for i,path in enumerate(histories):
+        distances=[abs(x-goals[i][0])+abs(y-goals[i][1]) for x,y in path]
+        diagnostics.append({"moves":len(path)-1,"revisits":len(path)-len(set(path)),"immediate_reversals":sum(path[j]==path[j-2] for j in range(2,len(path))),"nonprogress_moves":sum(b>=a for a,b in zip(distances,distances[1:])),"initial_manhattan":distances[0],"final_manhattan":distances[-1],"path":path})
+    return {"progress_diagnostics":diagnostics,"seed":seed,"robots":count,"strategy":strategy,"engine":mujoco.__version__,"static_obstacles_only":True,"successes":sum(t is not None for t in completed),"completion_rate":sum(t is not None for t in completed)/count,"mission_completion_seconds":completed,"simulated_seconds":float(d.time),"blocked_proposals":blocked,"external_contact_episodes":episodes,"actuator_work_proxy_j":work,"tracking_failure":tracking_failure,"steps":steps,"waits":waits,"trace":trace}
 
 def benchmark(seeds=(4100,4101,4102),count=6,horizon=100,modes=("astar","congestion_aware")):
     return [simulate_physics(seed,count,mode,horizon) for seed in seeds for mode in modes]
