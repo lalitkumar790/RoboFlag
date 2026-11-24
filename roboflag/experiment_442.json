@@ -79,5 +79,12 @@
   "independent": {
     "fisher_two_sided": 2.0681351985805686e-31,
     "allocation_binomial_two_sided": 0.10363903843785738
+  },
+  "completion": {
+    "status": "completed",
+    "ended_at": "2026-11-24T20:55:49.511973Z",
+    "rollout_decision": "control",
+    "rollout_variant": null,
+    "results_finalized": false
   }
 }

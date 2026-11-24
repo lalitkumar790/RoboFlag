@@ -16,7 +16,7 @@ RoboFlag uses native Flagsmith experiments to evaluate robot fleet navigation po
 | Individual mission completion | 662/1056 | 1312/1344 |
 | Blocked proposals per fleet | 433.00 | 36.29 |
 
-Primary absolute lift: 76.30 percentage points. Independent two-sided Fisher exact p = 2.0681e-31; exact binomial allocation p = 0.103639. Native inference was null at capture. Counts are native API aggregates reconciled with local terminal outcomes, not synthetic conversions. See [API snapshot](roboflag/experiment_442.json). Experiment status at capture: running; no further traffic planned.
+Primary absolute lift: 76.30 percentage points. Independent two-sided Fisher exact p = 2.0681e-31; exact binomial allocation p = 0.103639. Native inference was null at capture. Counts are native API aggregates reconciled with local terminal outcomes, not synthetic conversions. See [API snapshot](roboflag/experiment_442.json). Experiment subsequently completed with control retained. Adaptive was the measured candidate, not the deployed winner. The preserved API results snapshot predates completion and is not marked final by Flagsmith. No further traffic planned.
 
 ## Reproduce
 

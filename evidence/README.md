@@ -12,3 +12,5 @@ Robotic software updates can introduce fleet congestion even when individual nav
 
 Demo: https://roboflag.vercel.app
 Source: https://github.com/lalitkumar790/RoboFlag
+
+Completion record: experiment 442 ended on 2026-11-24 at 20:55:49 UTC with control retained. Native results remain unchanged and is_final=false. No claim of adaptive deployment is made.

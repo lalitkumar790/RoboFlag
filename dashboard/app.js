@@ -62,5 +62,6 @@ function renderEvidence(){
  }
  add("Absolute primary lift: "+(100*(m.adaptive.sum/m.adaptive.n-m.control.sum/m.control.n)).toFixed(2)+" percentage points");
  add("Independent Fisher exact p = "+n.independent.fisher_two_sided.toExponential(3)+" · Allocation exact binomial p = "+n.independent.allocation_binomial_two_sided.toFixed(4));
+ if(n.completion) add("Experiment completed · Actual rollout: "+n.completion.rollout_decision+" · Adaptive remains the measured candidate; no physical deployment claim.");
  add("Native inference: "+(n.native.payload.metrics[0].inference.adaptive===null?"unavailable":"available")+" · Snapshot "+n.native.as_of+" · Status at capture: "+n.status_at_capture);
 }
