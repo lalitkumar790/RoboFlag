@@ -1,26 +1,37 @@
 # RoboFlag — FeatureOps for Physical AI
 
-A hackathon research prototype for controlled experiments and progressive deployment of robotic navigation behaviours using Flagsmith.
+Experiment before you deploy. Measure before you scale.
 
-## Current milestone
-Identity-based feature evaluation selects conventional A* or congestion-aware A* at mission start. A deterministic grid demonstration reports the route and congestion cost. This is not yet a fleet simulator or a physical safety system.
+RoboFlag uses native Flagsmith experiments to evaluate robot fleet navigation policies in a seeded grid warehouse simulator. Whole fleets are randomized to avoid within-fleet interference.
 
-## Run locally
+## Confirmatory experiment #442
+
+200 unique fleets, 12 robots each, seeds 2000–2199. Primary endpoint: every robot completes its mission.
+
+| Outcome | Control A* | Congestion-aware A* |
+|---|---:|---:|
+| Native exposures | 88 | 112 |
+| Native complete-fleet conversions | 2 | 88 |
+| Complete fleet success | 2.27% | 78.57% |
+| Individual mission completion | 662/1056 | 1312/1344 |
+| Blocked proposals per fleet | 433.00 | 36.29 |
+
+Primary absolute lift: 76.30 percentage points. Independent two-sided Fisher exact p = 2.0681e-31; exact binomial allocation p = 0.103639. Native inference was null at capture. Counts are native API aggregates reconciled with local terminal outcomes, not synthetic conversions. See [API snapshot](roboflag/experiment_442.json). Experiment status at capture: running; no further traffic planned.
+
+## Reproduce
+
 Python 3.10+:
 ```sh
 pip install -r requirements.txt
-python -m pytest
-python -m roboflag.demo
+python -m pytest -q
+python -m roboflag.benchmark --seeds 20 --robots 12
+python -m roboflag.validation
+python -m roboflag.export_dashboard
+python -m http.server 8000 --directory dashboard
 ```
-Copy .env.example to .env and set FLAGSMITH_ENVIRONMENT_KEY locally. Never commit credentials. In Flagsmith create enabled feature navigation_strategy with value astar or congestion_aware. The demo uses identity robot-demo-001. Missing, disabled or invalid configuration selects the baseline; source is reported explicitly.
 
-## Roadmap
-- Multi-robot simulation and reproducible mission metrics
-- Native Flagsmith experiment exposure and outcome reporting
-- Guardrail evaluation and rollback with audit history
-- Interactive mission control and deployment
+[Mission Control deployment](https://roboflag.vercel.app) — static simulator traces, native snapshot and offline rollout rehearsal. Signed-out access must be checked before submission. See [experiment procedure](docs/native-experiment.md). Never commit credentials or rerun the confirmatory seeds against the same experiment.
 
-No empirical fleet results or hardware safety claims are made yet.
+## Evidence and limits
 
-## Mission Control dashboard
-Run `python -m roboflag.export_dashboard` then `python -m http.server 8000 --directory dashboard`. Open http://localhost:8000. The dashboard replays actual simulation traces and shows offline rollout audits. Vercel configuration builds the static dashboard from the same Python engine. Public deployment is not yet verified.
+480 exploratory missions plus 1,680 density-validation missions and 2,400 confirmatory missions. Offline staged rollout rehearsal includes injected acceptance failure and a rollback recommendation, not a remote mutation. The grid simulator uses conservative movement arbitration; blocked proposals are not physical collisions. No hardware safety claim; high-density complete-fleet reliability remains limited. Native inference unavailable at capture. Browser and Python tests run in CI.

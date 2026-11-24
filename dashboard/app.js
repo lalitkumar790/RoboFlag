@@ -53,11 +53,14 @@ function renderEvidence(){
   }
   host.append(section);
  }
- const e=$("experimentEvidence");
- const count=data.robot_count;
- for(const [label,arm] of [["Control","astar"],["Treatment","congestion_aware"]]){
-  const b=data.benchmark[arm], full=b.per_seed.filter(s=>s.successes===count).length;
-  const p=document.createElement("p");p.textContent=label+" exploratory full-fleet success: "+full+"/"+b.per_seed.length+" ("+pct(full/b.per_seed.length)+")";e.append(p);
+ const e=$("experimentEvidence"), n=data.native_experiment, m=n.native.payload.metrics[0].variants;
+ const add=(value)=>{const p=document.createElement("p");p.textContent=value;e.append(p);};
+ for(const [label,key] of [["Control","control"],["Adaptive","adaptive"]]){
+  const v=m[key], local=n.local[key];
+  add(label+" complete fleet success: "+v.sum+"/"+v.n+" ("+pct(v.sum/v.n)+")");
+  add(label+" individual missions: "+local.successes+"/"+local.missions+" ("+pct(local.successes/local.missions)+") · Blocked proposals per fleet: "+(local.blocked/local.fleets).toFixed(2));
  }
- const p=document.createElement("p");p.textContent="Assignment unit: independent fleet · 50/50 planned split · Primary event: fleet_all_missions_completed · Native results: not embedded";e.append(p);
+ add("Absolute primary lift: "+(100*(m.adaptive.sum/m.adaptive.n-m.control.sum/m.control.n)).toFixed(2)+" percentage points");
+ add("Independent Fisher exact p = "+n.independent.fisher_two_sided.toExponential(3)+" · Allocation exact binomial p = "+n.independent.allocation_binomial_two_sided.toFixed(4));
+ add("Native inference: "+(n.native.payload.metrics[0].inference.adaptive===null?"unavailable":"available")+" · Snapshot "+n.native.as_of+" · Status at capture: "+n.status_at_capture);
 }

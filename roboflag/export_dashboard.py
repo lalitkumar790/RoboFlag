@@ -11,6 +11,7 @@ def build(seeds=(0,1,2,3,4,5), count=12):
     return {"kind":"offline_simulation","robot_count":count,
             "replays":[{"seed":seed,"arms":{s:simulate(seed,count,s) for s in ("astar","congestion_aware")}} for seed in seeds],
             "benchmark":benchmark(20,count),
+            "native_experiment":json.loads(Path(__file__).with_name("experiment_442.json").read_text(encoding="utf-8")),
             "validation":sweep(),
             "rollouts":{"normal":rehearse(),"fault":rehearse(inject_fault=True)}}
 
