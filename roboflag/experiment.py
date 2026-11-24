@@ -4,18 +4,19 @@ import json
 import os
 import logging
 from uuid import uuid4
+from pathlib import Path
 from .fleet import simulate
 
 FLAG = "fleet_navigation_experiment"
 MODES = {"control":"astar","astar":"astar","congestion_aware":"congestion_aware"}
 
-def run(client, seed, count, identity):
+def run(client, seed, count, identity, experiment_id=440):
     flag = client.get_experiment_flag(FLAG, identifier=identity)
     if not flag.enabled or flag.value not in MODES:
         raise RuntimeError("Experiment flag disabled or invalid")
     if not flag.experiment or not flag.experiment.in_experiment or not flag.variant:
         raise RuntimeError("Identity not enrolled in keyed experiment")
-    if flag.experiment.id != 440:
+    if flag.experiment.id != experiment_id:
         raise RuntimeError("Unexpected experiment ID")
     strategy = MODES[flag.value]
     result = simulate(seed,count,strategy)
@@ -26,7 +27,7 @@ def run(client, seed, count, identity):
                        value=sum(m["duration"] for m in result["missions"])/count)
     if successes==count:
         client.track_event("fleet_all_missions_completed", identifier=identity, value=1)
-    return {"identity":identity,"seed":seed,"strategy":strategy,"variant":flag.variant,
+    return {"experiment_id":experiment_id,"identity":identity,"seed":seed,"strategy":strategy,"variant":flag.variant,
             "successes":successes,"missions":count,"completion_rate":rate,
             "prevented_conflicts":result["prevented_conflicts"],
             "delivery":"sdk_called_not_confirmed"}
@@ -43,13 +44,15 @@ class DeliveryWarnings(logging.Handler):
         if self.messages:
             raise RuntimeError("SDK delivery warning; stop batch and reconcile: " + "; ".join(self.messages))
 
-def run_batch(client, fleets, count, seed_start, emit=print, delivery_warnings=None):
+def run_batch(client, fleets, count, seed_start, emit=print, delivery_warnings=None, experiment_id=440, reserve=None):
     batch=uuid4().hex
     try:
         for i in range(fleets):
             identity=f"roboflag-{batch}-{i}"
             try:
-                result=run(client,seed_start+i,count,identity)
+                if reserve:
+                    reserve(seed_start+i, identity)
+                result=run(client,seed_start+i,count,identity,experiment_id)
                 client.flush_events()
                 if delivery_warnings:
                     delivery_warnings.check()
@@ -61,6 +64,23 @@ def run_batch(client, fleets, count, seed_start, emit=print, delivery_warnings=N
         client.close(timeout_seconds=30)
     if delivery_warnings:
         delivery_warnings.check()
+
+class Ledger:
+    """Exclusive per-seed reservation; never silently retry uncertain delivery."""
+    def __init__(self, root, experiment_id):
+        self.root=Path(root)/str(experiment_id)
+        self.root.mkdir(parents=True,exist_ok=True)
+        self.experiment_id=experiment_id
+
+    def reserve(self, seed, identity):
+        with (self.root/f"{seed}.jsonl").open("x",encoding="utf-8") as f:
+            f.write(json.dumps({"state":"reserved","experiment_id":self.experiment_id,"seed":seed,"identity":identity})+"\n")
+
+    def record(self, line):
+        row=json.loads(line)
+        with (self.root/f"{row['seed']}.jsonl").open("a",encoding="utf-8") as f:
+            f.write(line+"\n")
+        print(line,flush=True)
 
 def main():
     from dotenv import load_dotenv
@@ -74,13 +94,20 @@ def main():
     p.add_argument("--fleets",type=int,default=4)
     p.add_argument("--robots",type=int,default=12)
     p.add_argument("--seed-start",type=int,default=1010)
+    p.add_argument("--experiment-id",type=int,required=True)
+    p.add_argument("--ledger-dir",default="experiment-ledger")
     a=p.parse_args()
     if not 1<=a.fleets<=200 or not 1<=a.robots<=99:
         p.error("fleets 1..200; robots 1..99")
+    if a.experiment_id != 442 or a.robots != 12 or not 2000<=a.seed_start<=a.seed_start+a.fleets-1<=2199:
+        p.error("Confirmatory run requires experiment 442, 12 robots and seeds 2000–2199")
+    ledger=Ledger(a.ledger_dir,a.experiment_id)
+    if any((ledger.root/f"{seed}.jsonl").exists() for seed in range(a.seed_start,a.seed_start+a.fleets)):
+        p.error("Seed already reserved; reconcile before proceeding")
     client=Flagsmith(environment_key=os.environ["FLAGSMITH_ENVIRONMENT_KEY"],
                      enable_events=True,event_processor_config=EventProcessorConfig(max_buffer_items=1000))
     try:
-        run_batch(client,a.fleets,a.robots,a.seed_start,emit=lambda line: print(line,flush=True), delivery_warnings=delivery_warnings)
+        run_batch(client,a.fleets,a.robots,a.seed_start,emit=ledger.record, delivery_warnings=delivery_warnings, experiment_id=a.experiment_id, reserve=ledger.reserve)
     finally:
         sdk_logger.removeHandler(delivery_warnings)
 

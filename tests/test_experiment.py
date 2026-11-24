@@ -85,3 +85,21 @@ def test_real_sdk_buffer_and_flush(monkeypatch):
     assert all(p["metadata"]["experiment_id"]==440 for p in exposures)
     assert len([p for p in payloads if p["event"]=="fleet_completion_rate"])==4
     assert len([p for p in payloads if p["event"]=="fleet_mean_duration"])==4
+
+def test_confirmatory_id_and_mismatch():
+    c=client()
+    c.get_experiment_flag.return_value.experiment.id=442
+    assert run(c,2000,4,"new",experiment_id=442)["experiment_id"]==442
+    c.reset_mock()
+    with pytest.raises(RuntimeError,match="Unexpected experiment ID"):
+        run(c,2001,4,"wrong",experiment_id=440)
+    c.track_event.assert_not_called()
+
+def test_ledger_refuses_reused_seed(tmp_path):
+    from roboflag.experiment import Ledger
+    ledger=Ledger(tmp_path,442)
+    ledger.reserve(2000,"first")
+    with pytest.raises(FileExistsError):
+        ledger.reserve(2000,"second")
+    ledger.record('{"seed":2000,"identity":"first","experiment_id":442}')
+    assert len((tmp_path/"442"/"2000.jsonl").read_text().splitlines())==2
