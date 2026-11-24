@@ -1,0 +1,6 @@
+# Native physics validation (development branch)
+The existing grid-based experiments remain unchanged. This first milestone constructs the same rack layout and seeded start positions as the grid simulation, with one metre per cell, free-base 10 kg robots, two independently actuated wheels, low-friction support spheres approximating casters, planar ground and physical rack contacts. Parameters are provisional, not hardware-calibrated. Static obstacles only in this first smoke test. The simulator does not send Flagsmith events.
+
+Install with python -m pip install -r requirements-physics.txt. Run python -m roboflag.physics --smoke and python -m pytest -q tests/test_physics.py. CI runs the native engine headlessly and archives the measured forward and braking displacement. The smoke test checks motion, finite state, lateral drift and external contact pairs. It is not a navigation experiment.
+
+Next gate: closed-loop heading and waypoint tracking; then paired multi-robot scheduling with both existing planners on fresh seeds. Report physical contact episodes, not per-step contact counts, and distinguish grid time from physics time. Dynamic obstacle behavior, robustness sweeps and actual hardware validation remain out of scope for this first commit. Do not merge or claim physics performance until tests run.
