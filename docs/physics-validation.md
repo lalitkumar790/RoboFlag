@@ -61,3 +61,6 @@ Run 45504868349: V4 114/114, V5 113/114, reversals 138/67, work 13336.56/14038.9
 
 ## V5b development evidence
 All six paired development jobs completed successfully in run 45505620205. Full summaries archived in evidence/physics_v5b_development.json; workflow success does not imply navigation acceptance. No holdout tuning, production changes or remote events.
+
+## V5b frozen independent holdout
+Development run 45505620205: V4 and V5b both 114/114, zero contacts or tracking failures. Work 13336.5555/12244.2605 J, time 1034.575/887.70 s, reversals 138/70. Four pairs improved work and time, two tied. The aspirational 20% work and 50% reversal reduction targets were not met; the candidate merits independent evaluation rather than promotion. Freeze both implementations at 11aa92c; seeds 4900–4903, 6/12/24 robots, 12 pairs, 336 missions. Report every pair, mission completion and contacts first, then paired work/time for jointly successful fleets. No tuning on holdout, no new Flagsmith traffic, no production changes. Known cart trajectory and 300 s deadline unchanged.

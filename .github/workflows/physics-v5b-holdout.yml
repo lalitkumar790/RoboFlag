@@ -1,0 +1,32 @@
+name: Frozen V4 V5b dynamic holdout
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-v5b-holdout.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        robots: [6,12,24]
+        seed: [4900,4901,4902,4903]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 11aa92ce2e859b8ab199248ac5b69cae03ebe18e
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_planner.py tests/test_physics_dynamic_fleet.py
+      - run: python -m roboflag.physics_dynamic_fleet --robots ${{ matrix.robots }} --seed ${{ matrix.seed }} --modes progress_aware cycle_aware > v5b-holdout.json
+      - run: python -c 'import json; print(json.dumps([{k:v for k,v in r.items() if k!="trace"} for r in json.load(open("v5b-holdout.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v5b-holdout-${{ matrix.robots }}-${{ matrix.seed }}
+          path: v5b-holdout.json
