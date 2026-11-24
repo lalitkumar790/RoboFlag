@@ -23,5 +23,19 @@ function play(){if(timer!==null){stop();return;}if(Number($("tick").value)>=Numb
 function report(){const a=data.benchmark.astar,b=data.benchmark.congestion_aware;const rows=[["Mission success","success_rate",v=>(100*v).toFixed(1)+"%"],["Capped duration","mean_duration_capped_ticks",v=>v.toFixed(1)+" ticks"],["Movement steps","mean_steps",v=>v.toFixed(1)],["Waiting ticks","mean_waits",v=>v.toFixed(1)],["Blocked proposals","prevented_conflicts",v=>String(v)]];
  for(const [label,key,fmt] of rows){const row=document.createElement("div");row.className="metric";const name=document.createElement("span");name.textContent=label;row.append(name);for(const [title,value] of [["Control",a[key]],["Treatment",b[key]]]){const cell=document.createElement("div"),caption=document.createElement("small"),strong=document.createElement("strong"),bar=document.createElement("div"),fill=document.createElement("i");caption.textContent=title;strong.textContent=fmt(value);bar.className="bar";fill.style.width=(100*value/(key==="success_rate"?1:Math.max(a[key],b[key],1)))+"%";bar.append(fill);cell.append(caption,strong,bar);row.append(cell);}$("metrics").append(row);}
 }
-fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
+fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();$("rolloutMode").disabled=false;renderRollout();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
 $("seed").onchange=select;$("play").onclick=play;$("reset").onclick=()=>{stop();$("tick").value=0;render();};$("tick").oninput=()=>{stop();render();};$("speed").onchange=()=>{if(timer!==null){stop();play();}};
+
+function renderRollout(){
+ const r=data.rollouts[$("rolloutMode").value], pct=v=>(100*v).toFixed(1)+"%";
+ $("rolloutSummary").textContent="Baseline "+pct(r.baseline_rate)+" · Final candidate allocation "+r.final_candidate_percentage+"% · Threshold "+pct(r.regression_limit);
+ const host=$("rolloutAudit");host.replaceChildren();
+ for(const s of r.history){
+  const row=document.createElement("div");row.className="audit";
+  for(const value of [s.stage_percent+"% target",s.assigned+"/"+s.missions+" assigned",pct(s.effective_success_rate)+" success",s.injected_losses+" injected losses",s.decision]){
+   const cell=document.createElement("span");cell.textContent=value;row.append(cell);
+  }
+  row.lastChild.className=s.decision==="ROLLBACK"?"danger":"good";host.append(row);
+ }
+}
+$("rolloutMode").onchange=renderRollout;

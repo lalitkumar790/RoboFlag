@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "python3 -m roboflag.export_dashboard",
+  "outputDirectory": "dashboard",
+  "installCommand": "echo No external build dependencies"
+}
