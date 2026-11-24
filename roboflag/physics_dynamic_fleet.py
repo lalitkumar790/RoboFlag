@@ -37,8 +37,13 @@ def build(seed,count):
     mujoco.mj_forward(m,d)
     return m,d
 
+def cycle_penalty(history):
+    # Only suppress an immediate reversal after a recent reversal already occurred.
+    recent=history[-7:]
+    return 3. if any(recent[j]==recent[j-2] for j in range(2,len(recent))) else 0.
+
 def simulate(seed,count,strategy,deadline=300.):
-    if strategy not in ("congestion_aware","progress_aware","reversal_aware"):raise ValueError(strategy)
+    if strategy not in ("congestion_aware","progress_aware","reversal_aware","cycle_aware"):raise ValueError(strategy)
     width,height,walls,missions,_=scenario(seed,count)
     m,d=build(seed,count)
     mocap=int(m.body("fleet_cart").mocapid[0])
@@ -57,7 +62,11 @@ def simulate(seed,count,strategy,deadline=300.):
         for j in range(count):
             i=(tick-1+j)%count
             if completed[i] is not None:continue
-            if strategy=="reversal_aware":
+            if strategy=="cycle_aware":
+                history=histories[i]
+                penalty=cycle_penalty(history)
+                route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(history[:-1]),previous_cell=history[-2] if len(history)>1 else None,reversal_penalty=penalty)
+            elif strategy=="reversal_aware":
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]),previous_cell=histories[i][-2] if len(histories[i])>1 else None,reversal_penalty=3.)
             elif strategy=="progress_aware":
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]))
@@ -96,6 +105,6 @@ def simulate(seed,count,strategy,deadline=300.):
 
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--robots",type=int,default=6);p.add_argument("--seed",type=int,default=4600)
-    p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware"],default=["congestion_aware","progress_aware"])
+    p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware","cycle_aware"],default=["congestion_aware","progress_aware"])
     a=p.parse_args()
     print(json.dumps([simulate(a.seed,a.robots,s) for s in a.modes]))

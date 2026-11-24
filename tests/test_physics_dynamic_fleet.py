@@ -18,3 +18,10 @@ def test_model_build():
     m,d=build(4600,6)
     assert m.nmocap==1
     assert m.geom("fleet_cart_geom").id>=0
+
+
+def test_cycle_penalty_is_conditional():
+    from roboflag.physics_dynamic_fleet import cycle_penalty
+    assert cycle_penalty([(0,0),(1,0)])==0
+    assert cycle_penalty([(0,0),(1,0),(0,0)])==3
+    assert cycle_penalty([(0,0),(1,0),(0,0),(0,1),(0,2),(1,2),(2,2),(3,2),(4,2)])==0
