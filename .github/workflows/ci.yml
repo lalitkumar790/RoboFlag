@@ -13,10 +13,15 @@ jobs:
       - run: python -m roboflag.benchmark --seeds 20 --robots 12 > benchmark.json
       - run: python -m roboflag.export_dashboard
       - run: node --check dashboard/app.js
+      - run: python -m roboflag.rollout > rollout.json
+      - run: python -m roboflag.rollout --fault > rollout-fault.json
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark
-          path: benchmark.json
+          path: |
+            benchmark.json
+            rollout.json
+            rollout-fault.json
       - uses: actions/upload-artifact@v4
         with:
           name: mission-control
