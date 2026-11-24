@@ -1,0 +1,234 @@
+{
+  "source_run": 45493070265,
+  "artifact": 14967586366,
+  "rows": [
+    {
+      "seed": 4100,
+      "robots": 6,
+      "strategy": "astar",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 6,
+      "completion_rate": 1,
+      "mission_completion_seconds": [
+        44.290000000004206,
+        5.9899999999998945,
+        54.31000000000933,
+        33.17499999999852,
+        18.56500000000059,
+        23.14999999999968
+      ],
+      "simulated_seconds": 54.31000000000933,
+      "blocked_proposals": 0,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 289.25437556840785,
+      "tracking_failure": null,
+      "steps": [
+        11,
+        1,
+        14,
+        8,
+        4,
+        5
+      ],
+      "waits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "seed": 4100,
+      "robots": 6,
+      "strategy": "congestion_aware",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 6,
+      "completion_rate": 1,
+      "mission_completion_seconds": [
+        74.82000000000444,
+        5.9899999999998945,
+        71.48000000000748,
+        38.27500000000113,
+        19.83000000000034,
+        24.474999999999415
+      ],
+      "simulated_seconds": 74.82000000000444,
+      "blocked_proposals": 0,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 409.8336178233619,
+      "tracking_failure": null,
+      "steps": [
+        17,
+        1,
+        16,
+        8,
+        4,
+        5
+      ],
+      "waits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "seed": 4101,
+      "robots": 6,
+      "strategy": "astar",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 5,
+      "completion_rate": 0.8333333333333334,
+      "mission_completion_seconds": [
+        45.460000000004804,
+        null,
+        21.904999999999927,
+        45.460000000004804,
+        5.9899999999998945,
+        29.689999999998378
+      ],
+      "simulated_seconds": 69.53500000000925,
+      "blocked_proposals": 87,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 338.0254674342442,
+      "tracking_failure": null,
+      "steps": [
+        11,
+        13,
+        5,
+        11,
+        1,
+        7
+      ],
+      "waits": [
+        0,
+        87,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "seed": 4101,
+      "robots": 6,
+      "strategy": "congestion_aware",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 6,
+      "completion_rate": 1,
+      "mission_completion_seconds": [
+        45.460000000004804,
+        101.52999999998015,
+        21.904999999999927,
+        45.460000000004804,
+        5.9899999999998945,
+        29.689999999998378
+      ],
+      "simulated_seconds": 101.52999999998015,
+      "blocked_proposals": 0,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 434.17939800792084,
+      "tracking_failure": null,
+      "steps": [
+        11,
+        26,
+        5,
+        11,
+        1,
+        7
+      ],
+      "waits": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "seed": 4102,
+      "robots": 6,
+      "strategy": "astar",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 2,
+      "completion_rate": 0.3333333333333333,
+      "mission_completion_seconds": [
+        null,
+        null,
+        57.62500000001103,
+        null,
+        null,
+        29.914999999998333
+      ],
+      "simulated_seconds": 74.62500000000462,
+      "blocked_proposals": 367,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 371.72003133445594,
+      "tracking_failure": null,
+      "steps": [
+        9,
+        8,
+        15,
+        8,
+        8,
+        7
+      ],
+      "waits": [
+        91,
+        92,
+        0,
+        92,
+        92,
+        0
+      ]
+    },
+    {
+      "seed": 4102,
+      "robots": 6,
+      "strategy": "congestion_aware",
+      "engine": "3.3.7",
+      "static_obstacles_only": true,
+      "successes": 6,
+      "completion_rate": 1,
+      "mission_completion_seconds": [
+        51.715000000008004,
+        60.885000000012695,
+        64.22500000001408,
+        91.33499999998942,
+        56.290000000010345,
+        29.914999999998333
+      ],
+      "simulated_seconds": 91.33499999998942,
+      "blocked_proposals": 7,
+      "external_contact_episodes": 0,
+      "actuator_work_proxy_j": 543.0117589053707,
+      "tracking_failure": null,
+      "steps": [
+        12,
+        14,
+        15,
+        19,
+        9,
+        7
+      ],
+      "waits": [
+        0,
+        0,
+        0,
+        3,
+        4,
+        0
+      ]
+    }
+  ]
+}
