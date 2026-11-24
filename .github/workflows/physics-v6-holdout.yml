@@ -1,0 +1,33 @@
+name: Frozen V6 deadline holdout
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-v6-holdout.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        robots: [12,24]
+        seed: [5100,5101,5102]
+        deadline: [120,180,300]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b5ddeeed9878d82b0d907ee29ee0eca954cba2e4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_planner.py tests/test_physics_dynamic_fleet.py
+      - run: python -m roboflag.physics_dynamic_fleet --robots ${{ matrix.robots }} --seed ${{ matrix.seed }} --modes progress_aware cycle_aware deadline_aware --diagnose --deadline ${{ matrix.deadline }} > v6-holdout.json
+      - run: python -c 'import json; print(json.dumps([{k:v for k,v in r.items() if k!="trace"} for r in json.load(open("v6-holdout.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v6-holdout-${{ matrix.robots }}-${{ matrix.seed }}-${{ matrix.deadline }}
+          path: v6-holdout.json
