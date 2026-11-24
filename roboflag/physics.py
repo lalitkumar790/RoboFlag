@@ -23,9 +23,9 @@ def model_xml(seed=4000,count=6):
         x,y=start
         pieces.append(f'<body name="r{i}" pos="{x} {y} .08"><freejoint name="root{i}"/><geom name="chassis{i}" type="cylinder" size=".155 .045" pos="0 0 .035" mass="8.6"/>')
         for side,offset in [('l',.18),('r',-.18)]:
-            pieces.append(f'<body name="wheel_{i}_{side}" pos="0 {offset} 0"><joint name="joint_{i}_{side}" type="hinge" axis="0 1 0" damping=".02"/><geom name="tire_{i}_{side}" type="cylinder" size=".08 .035" euler="1.57079632679 0 0" mass=".5" friction="1.2 .005 .0001"/></body>')
+            pieces.append(f'<body name="wheel_{i}_{side}" pos="0 {offset} 0"><joint name="joint_{i}_{side}" type="hinge" axis="0 1 0" damping=".02"/><geom name="tire_{i}_{side}" type="cylinder" size=".08 .035" euler="1.57079632679 0 0" mass=".5" priority="1" friction="1.2 .005 .0001"/></body>')
         for end,offset in [('f',.115),('b',-.115)]:
-            pieces.append(f'<geom name="caster_{i}_{end}" type="sphere" pos="{offset} 0 -.05" size=".03" mass=".2" friction=".005 .001 .0001"/>')
+            pieces.append(f'<geom name="caster_{i}_{end}" type="sphere" pos="{offset} 0 -.05" size=".03" mass=".2" priority="1" friction=".005 .001 .0001"/>')
         pieces.append('</body>')
     pieces.append('</worldbody><actuator>')
     for i in range(count):
@@ -81,12 +81,13 @@ def smoke():
         mujoco.mj_step(m,d)
         contacts.update(contact_pairs(m,d))
     moved=pose(m,d,0)
+    diagnostics={"wheel_velocity":[float(d.qvel[m.jnt_dofadr[m.joint(f"joint_0_{side}").id]]) for side in ("l","r")],"motor_force":d.actuator_force.tolist(),"ground_contacts":[{"geoms":[m.geom(int(c.geom1)).name,m.geom(int(c.geom2)).name],"friction":c.friction.tolist()} for c in d.contact[:d.ncon] if m.geom("floor").id in (c.geom1,c.geom2)]}
     for _ in range(200):
         drive(m,d,0,0,0)
         mujoco.mj_step(m,d)
         contacts.update(contact_pairs(m,d))
     stopped=pose(m,d,0)
-    result={"engine_version":mujoco.__version__,"seed":seed,"initial":initial,"after_drive":moved,"after_brake":stopped,"forward_displacement":moved[0]-initial[0],"lateral_drift":abs(moved[1]-initial[1]),"braking_displacement":math.hypot(stopped[0]-moved[0],stopped[1]-moved[1]),"external_contact_pairs":sorted(contacts),"finite":bool(np.isfinite(d.qpos).all()),"physics_seconds":float(d.time)}
+    result={"drive_diagnostics":diagnostics,"engine_version":mujoco.__version__,"seed":seed,"initial":initial,"after_drive":moved,"after_brake":stopped,"forward_displacement":moved[0]-initial[0],"lateral_drift":abs(moved[1]-initial[1]),"braking_displacement":math.hypot(stopped[0]-moved[0],stopped[1]-moved[1]),"external_contact_pairs":sorted(contacts),"finite":bool(np.isfinite(d.qpos).all()),"physics_seconds":float(d.time)}
     return result
 
 if __name__=="__main__":
