@@ -2,6 +2,7 @@ name: Native MuJoCo feasibility
 on:
   push:
     branches: [physics-validation]
+    paths: ['roboflag/physics.py','roboflag/physics_fleet.py','roboflag/physics_tracking.py','roboflag/physics_planner.py','roboflag/fleet.py','roboflag/navigation.py','requirements-physics.txt','tests/test_physics.py','tests/test_physics_tracking.py','tests/test_physics_fleet.py','.github/workflows/physics.yml']
   workflow_dispatch:
 jobs:
   physics:

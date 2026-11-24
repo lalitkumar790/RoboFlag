@@ -1,0 +1,24 @@
+name: Dynamic obstacle crossing reservation
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['roboflag/physics_crossing.py','tests/test_physics_crossing.py','.github/workflows/physics-crossing.yml']
+  workflow_dispatch:
+jobs:
+  crossing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m roboflag.physics_crossing > crossing.json
+      - run: python -c 'import json; print(json.dumps([{k:v for k,v in r.items() if k!="trace"} for r in json.load(open("crossing.json"))],indent=2))'
+      - run: python -m pytest -q tests/test_physics_crossing.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crossing-feasibility
+          path: crossing.json
