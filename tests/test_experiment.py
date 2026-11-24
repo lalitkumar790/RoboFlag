@@ -103,3 +103,19 @@ def test_ledger_refuses_reused_seed(tmp_path):
         ledger.reserve(2000,"second")
     ledger.record('{"seed":2000,"identity":"first","experiment_id":442}')
     assert len((tmp_path/"442"/"2000.jsonl").read_text().splitlines())==2
+
+def test_followup_protocol():
+    from roboflag.experiment import valid_protocol
+    assert valid_protocol(445,12,3000,100)
+    assert valid_protocol(445,12,3100,100)
+    assert not valid_protocol(442,12,2000,100)
+    assert not valid_protocol(445,12,3199,2)
+    assert not valid_protocol(445,11,3000,100)
+    assert not valid_protocol(445,12,3000,0)
+
+def test_followup_numeric_event():
+    c=client()
+    c.get_experiment_flag.return_value.experiment.id=445
+    row=run(c,3000,12,"followup",experiment_id=445)
+    assert row["experiment_id"]==445
+    c.track_event.assert_any_call("fleet_completion_rate",identifier="followup",value=row["successes"]/12)

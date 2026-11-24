@@ -82,6 +82,9 @@ class Ledger:
             f.write(line+"\n")
         print(line,flush=True)
 
+def valid_protocol(experiment_id, robots, seed_start, fleets):
+    return experiment_id == 445 and robots == 12 and 1 <= fleets <= 200 and 3000 <= seed_start <= seed_start+fleets-1 <= 3199
+
 def main():
     from dotenv import load_dotenv
     from flagsmith import Flagsmith, EventProcessorConfig
@@ -99,8 +102,8 @@ def main():
     a=p.parse_args()
     if not 1<=a.fleets<=200 or not 1<=a.robots<=99:
         p.error("fleets 1..200; robots 1..99")
-    if a.experiment_id != 442 or a.robots != 12 or not 2000<=a.seed_start<=a.seed_start+a.fleets-1<=2199:
-        p.error("Confirmatory run requires experiment 442, 12 robots and seeds 2000–2199")
+    if not valid_protocol(a.experiment_id,a.robots,a.seed_start,a.fleets):
+        p.error("Active protocol requires experiment 445, 12 robots and seeds 3000–3199")
     ledger=Ledger(a.ledger_dir,a.experiment_id)
     if any((ledger.root/f"{seed}.jsonl").exists() for seed in range(a.seed_start,a.seed_start+a.fleets)):
         p.error("Seed already reserved; reconcile before proceeding")
