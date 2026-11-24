@@ -11,7 +11,13 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
       - run: python -m roboflag.benchmark --seeds 20 --robots 12 > benchmark.json
+      - run: python -m roboflag.export_dashboard
+      - run: node --check dashboard/app.js
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark
           path: benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mission-control
+          path: dashboard/

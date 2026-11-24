@@ -1,0 +1,27 @@
+"use strict";
+const $=id=>document.getElementById(id);
+let data, replay, timer=null;
+const project=(x,y,z=0)=>[370+(x-y)*18,36+(x+y)*12-z];
+function poly(ctx,points,color,stroke){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle=color;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}}
+function cube(ctx,x,y,h,colors){const a=project(x,y),b=project(x+0.86,y),c=project(x+0.86,y+0.86),d=project(x,y+0.86);const A=project(x,y,h),B=project(x+0.86,y,h),C=project(x+0.86,y+0.86,h),D=project(x,y+0.86,h);poly(ctx,[b,c,C,B],colors[1]);poly(ctx,[c,d,D,C],colors[2]);poly(ctx,[A,B,C,D],colors[0]);}
+function draw(id,run,tick,color){
+ const canvas=$(id),ctx=canvas.getContext("2d"),frame=run.trace[Math.min(tick,run.trace.length-1)];
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ for(let x=0;x<run.width;x++)for(let y=0;y<run.height;y++)poly(ctx,[project(x,y),project(x+1,y),project(x+1,y+1),project(x,y+1)],(x+y)%2?"#172536":"#1a2b3e","#26394c");
+ for(const m of run.missions){const [x,y]=m.goal;const [a,b]=project(x+.5,y+.5);ctx.beginPath();ctx.ellipse(a,b,8,5,0,0,Math.PI*2);ctx.strokeStyle="#a9b9ca";ctx.stroke();}
+ const objects=run.walls.map(([x,y])=>({x,y,h:28,c:["#70859b","#3e5065","#52667c"]}));
+ frame.obstacles.forEach(([x,y])=>objects.push({x,y,h:9,c:["#f87171","#9f3333","#c84b4b"]}));
+ frame.positions.forEach(([x,y],i)=>{const m=run.missions[i];const done=m.success&&m.duration<=frame.tick;objects.push({x:x+.07,y:y+.07,h:12,c:done?["#4de3ba","#16866d","#24ad8f"]:color});});
+ objects.sort((a,b)=>a.x+a.y-b.x-b.y).forEach(o=>cube(ctx,o.x,o.y,o.h,o.c));
+ $(id+"Count").textContent=frame.completed+"/"+run.missions.length+" complete";
+ $(id+"Stats").textContent="Replay tick "+frame.tick+" / "+run.trace.length+" · Final blocked proposals: "+run.prevented_conflicts+" · Final success: "+run.missions.filter(m=>m.success).length+"/"+run.missions.length;
+}
+function render(){const t=Number($("tick").value);$("tickLabel").textContent=t+1;draw("a",replay.arms.astar,t,["#f2c879","#987235","#bc9347"]);draw("b",replay.arms.congestion_aware,t,["#76baff","#275b99","#3a7bc5"]);}
+function stop(){if(timer!==null)clearInterval(timer);timer=null;$("play").textContent="Play";}
+function select(){stop();replay=data.replays[Number($("seed").value)];$("tick").max=Math.max(replay.arms.astar.trace.length,replay.arms.congestion_aware.trace.length)-1;$("tick").value=0;render();}
+function play(){if(timer!==null){stop();return;}if(Number($("tick").value)>=Number($("tick").max))$("tick").value=0;$("play").textContent="Pause";timer=setInterval(()=>{if(Number($("tick").value)>=Number($("tick").max)){stop();return;}$("tick").value=Number($("tick").value)+1;render();},Number($("speed").value));}
+function report(){const a=data.benchmark.astar,b=data.benchmark.congestion_aware;const rows=[["Mission success","success_rate",v=>(100*v).toFixed(1)+"%"],["Capped duration","mean_duration_capped_ticks",v=>v.toFixed(1)+" ticks"],["Movement steps","mean_steps",v=>v.toFixed(1)],["Waiting ticks","mean_waits",v=>v.toFixed(1)],["Blocked proposals","prevented_conflicts",v=>String(v)]];
+ for(const [label,key,fmt] of rows){const row=document.createElement("div");row.className="metric";const name=document.createElement("span");name.textContent=label;row.append(name);for(const [title,value] of [["Control",a[key]],["Treatment",b[key]]]){const cell=document.createElement("div"),caption=document.createElement("small"),strong=document.createElement("strong"),bar=document.createElement("div"),fill=document.createElement("i");caption.textContent=title;strong.textContent=fmt(value);bar.className="bar";fill.style.width=(100*value/(key==="success_rate"?1:Math.max(a[key],b[key],1)))+"%";bar.append(fill);cell.append(caption,strong,bar);row.append(cell);}$("metrics").append(row);}
+}
+fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
+$("seed").onchange=select;$("play").onclick=play;$("reset").onclick=()=>{stop();$("tick").value=0;render();};$("tick").oninput=()=>{stop();render();};$("speed").onchange=()=>{if(timer!==null){stop();play();}};
