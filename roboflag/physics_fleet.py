@@ -7,11 +7,12 @@ import mujoco
 import numpy as np
 from .fleet import scenario
 from .navigation import plan
+from .physics_planner import plan_physics
 from .physics import build, pose, drive, contact_pairs, DT
 from .physics_tracking import command
 
 def simulate_physics(seed=4100,count=6,strategy="astar",horizon=100):
-    if strategy not in ("astar","congestion_aware"):
+    if strategy not in ("astar","congestion_aware","physics_aware"):
         raise ValueError("Unknown planner")
     width,height,walls,missions,_=scenario(seed,count)
     m,d=build(seed,count)
@@ -33,7 +34,10 @@ def simulate_physics(seed=4100,count=6,strategy="astar",horizon=100):
         targets=list(cells)
         for i in [(tick-1+j)%count for j in range(count)]:
             if completed[i] is not None:continue
-            route=plan(cells[i],goals[i],width,height,walls,congestion if strategy=="congestion_aware" else {})
+            if strategy=="physics_aware":
+                route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2])
+            else:
+                route=plan(cells[i],goals[i],width,height,walls,congestion if strategy=="congestion_aware" else {})
             if len(route)>1 and route[1] not in occupied and route[1] not in reserved:
                 targets[i]=route[1];reserved.add(route[1])
             else:
@@ -67,13 +71,14 @@ def simulate_physics(seed=4100,count=6,strategy="astar",horizon=100):
         if all(t is not None for t in completed):break
     return {"seed":seed,"robots":count,"strategy":strategy,"engine":mujoco.__version__,"static_obstacles_only":True,"successes":sum(t is not None for t in completed),"completion_rate":sum(t is not None for t in completed)/count,"mission_completion_seconds":completed,"simulated_seconds":float(d.time),"blocked_proposals":blocked,"external_contact_episodes":episodes,"actuator_work_proxy_j":work,"tracking_failure":tracking_failure,"steps":steps,"waits":waits,"trace":trace}
 
-def benchmark(seeds=(4100,4101,4102),count=6,horizon=100):
-    return [simulate_physics(seed,count,mode,horizon) for seed in seeds for mode in ("astar","congestion_aware")]
+def benchmark(seeds=(4100,4101,4102),count=6,horizon=100,modes=("astar","congestion_aware")):
+    return [simulate_physics(seed,count,mode,horizon) for seed in seeds for mode in modes]
 
 if __name__=="__main__":
     p=argparse.ArgumentParser()
     p.add_argument("--robots",type=int,default=6)
     p.add_argument("--seeds",type=int,nargs="+",default=[4100,4101,4102])
     p.add_argument("--horizon",type=int,default=100)
+    p.add_argument("--modes",nargs="+",choices=["astar","congestion_aware","physics_aware"],default=["astar","congestion_aware"])
     a=p.parse_args()
-    print(json.dumps(benchmark(a.seeds,a.robots,a.horizon)))
+    print(json.dumps(benchmark(a.seeds,a.robots,a.horizon,a.modes)))
