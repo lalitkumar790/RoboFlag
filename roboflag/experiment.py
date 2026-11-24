@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import logging
 from uuid import uuid4
 from .fleet import simulate
 
@@ -30,6 +31,20 @@ def run(client, seed, count, identity):
             "prevented_conflicts":result["prevented_conflicts"],
             "delivery":"sdk_called_not_confirmed"}
 
+def run_batch(client, fleets, count, seed_start, emit=print):
+    batch=uuid4().hex
+    try:
+        for i in range(fleets):
+            identity=f"roboflag-{batch}-{i}"
+            try:
+                result=run(client,seed_start+i,count,identity)
+                emit(json.dumps(result))
+            except Exception:
+                logging.exception("Fleet submission failed: identity=%s seed=%s; delivery may be partial", identity, seed_start+i)
+                raise
+    finally:
+        client.close()
+
 def main():
     from dotenv import load_dotenv
     from flagsmith import Flagsmith, EventProcessorConfig
@@ -43,9 +58,7 @@ def main():
         p.error("fleets 1..200; robots 1..99")
     client=Flagsmith(environment_key=os.environ["FLAGSMITH_ENVIRONMENT_KEY"],
                      enable_events=True,event_processor_config=EventProcessorConfig(max_buffer_items=1))
-    batch=uuid4().hex
-    for i in range(a.fleets):
-        print(json.dumps(run(client,a.seed_start+i,a.robots,f"roboflag-{batch}-{i}")),flush=True)
+    run_batch(client,a.fleets,a.robots,a.seed_start,emit=lambda line: print(line,flush=True))
 
 if __name__=="__main__":
     main()

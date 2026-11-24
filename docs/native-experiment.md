@@ -6,3 +6,5 @@ Each fleet, not individual interacting robots, is a randomized unit. Each receiv
 
 Run python -m roboflag.experiment --fleets 4 --robots 12
 Inspect exposures and outcomes in Flagsmith before running a larger batch. SDK calls do not prove ingestion; verify warehouse results. Do not run repeated batches with overlapping seeds for confirmatory analysis. The offline paired benchmark is separate. Guardrail decisions are exploratory recommendations only and never mutate remote state.
+
+The runner explicitly closes the SDK in a finally block, including when a fleet fails. Output is a local submission record, not a warehouse receipt. A synchronous error aborts the batch; do not blindly retry a partially submitted batch. Check warehouse ingestion and experiment exposures separately.
