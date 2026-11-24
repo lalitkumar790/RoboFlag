@@ -38,7 +38,7 @@ def build(seed,count):
     return m,d
 
 def simulate(seed,count,strategy,deadline=300.):
-    if strategy not in ("congestion_aware","progress_aware"):raise ValueError(strategy)
+    if strategy not in ("congestion_aware","progress_aware","reversal_aware"):raise ValueError(strategy)
     width,height,walls,missions,_=scenario(seed,count)
     m,d=build(seed,count)
     mocap=int(m.body("fleet_cart").mocapid[0])
@@ -57,7 +57,9 @@ def simulate(seed,count,strategy,deadline=300.):
         for j in range(count):
             i=(tick-1+j)%count
             if completed[i] is not None:continue
-            if strategy=="progress_aware":
+            if strategy=="reversal_aware":
+                route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]),previous_cell=histories[i][-2] if len(histories[i])>1 else None,reversal_penalty=3.)
+            elif strategy=="progress_aware":
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]))
             else:
                 route=plan(cells[i],goals[i],width,height,walls,congestion)
@@ -94,5 +96,6 @@ def simulate(seed,count,strategy,deadline=300.):
 
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--robots",type=int,default=6);p.add_argument("--seed",type=int,default=4600)
+    p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware"],default=["congestion_aware","progress_aware"])
     a=p.parse_args()
-    print(json.dumps([simulate(a.seed,a.robots,s) for s in ("congestion_aware","progress_aware")]))
+    print(json.dumps([simulate(a.seed,a.robots,s) for s in a.modes]))
