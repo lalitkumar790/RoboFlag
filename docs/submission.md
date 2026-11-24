@@ -35,3 +35,6 @@ Do not execute the native runner again against completed experiment 442.
 - [ ] Submit the entry and confirm receipt.
 
 Authenticated production HTTP checks succeeded. Anonymous access, video recording, organizer requirements and submission receipt are not verified. No entry has been submitted by this document.
+
+## Numeric follow-up #445
+Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.

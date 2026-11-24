@@ -23,7 +23,7 @@ function play(){if(timer!==null){stop();return;}if(Number($("tick").value)>=Numb
 function report(){const a=data.benchmark.astar,b=data.benchmark.congestion_aware;const rows=[["Mission success","success_rate",v=>(100*v).toFixed(1)+"%"],["Capped duration","mean_duration_capped_ticks",v=>v.toFixed(1)+" ticks"],["Movement steps","mean_steps",v=>v.toFixed(1)],["Waiting ticks","mean_waits",v=>v.toFixed(1)],["Blocked proposals","prevented_conflicts",v=>String(v)]];
  for(const [label,key,fmt] of rows){const row=document.createElement("div");row.className="metric";const name=document.createElement("span");name.textContent=label;row.append(name);for(const [title,value] of [["Control",a[key]],["Treatment",b[key]]]){const cell=document.createElement("div"),caption=document.createElement("small"),strong=document.createElement("strong"),bar=document.createElement("div"),fill=document.createElement("i");caption.textContent=title;strong.textContent=fmt(value);bar.className="bar";fill.style.width=(100*value/(key==="success_rate"?1:Math.max(a[key],b[key],1)))+"%";bar.append(fill);cell.append(caption,strong,bar);row.append(cell);}$("metrics").append(row);}
 }
-fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();$("rolloutMode").disabled=false;renderRollout();renderEvidence();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
+fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();$("rolloutMode").disabled=false;renderRollout();renderEvidence();renderNumeric();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
 $("seed").onchange=select;$("play").onclick=play;$("reset").onclick=()=>{stop();$("tick").value=0;render();};$("tick").oninput=()=>{stop();render();};$("speed").onchange=()=>{if(timer!==null){stop();play();}};
 
 function renderRollout(){
@@ -64,4 +64,24 @@ function renderEvidence(){
  add("Independent Fisher exact p = "+n.independent.fisher_two_sided.toExponential(3)+" · Allocation exact binomial p = "+n.independent.allocation_binomial_two_sided.toFixed(4));
  if(n.completion) add("Experiment completed · Actual rollout: "+n.completion.rollout_decision+" · Adaptive remains the measured candidate; no physical deployment claim.");
  add("Native inference: "+(n.native.payload.metrics[0].inference.adaptive===null?"unavailable":"available")+" · Snapshot "+n.native.as_of+" · Status at capture: "+n.status_at_capture);
+}
+
+function renderNumeric(){
+ const d=data.numeric_experiment,m=d.native.payload.metrics[0],v=m.inference.adaptive,host=$("numericEvidence");
+ const pct=x=>(100*x).toFixed(2)+"%";
+ function add(s){const p=document.createElement("p");p.textContent=s;host.append(p);}
+ add("Native chance to win: "+pct(v.chance_to_win)+" · Relative lift: +"+pct(v.lift));
+ add("Control completion: "+pct(m.variants.control.sum/m.variants.control.n)+" · Adaptive completion: "+pct(m.variants.adaptive.sum/m.variants.adaptive.n));
+ add("95% credible interval: +"+pct(v.ci_low)+" to +"+pct(v.ci_high));
+ const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+ svg.setAttribute("viewBox","0 0 340 85");svg.setAttribute("width","100%");svg.setAttribute("role","img");svg.setAttribute("aria-label","Native relative lift and 95% credible interval");svg.style.maxWidth="640px";
+ const x=p=>20+p*500;
+ function el(tag,attrs,label){const n=document.createElementNS(svg.namespaceURI,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(label)n.textContent=label;svg.append(n);}
+ el("line",{x1:20,y1:40,x2:320,y2:40,stroke:"currentColor",opacity:.4});
+ for(let i=0;i<=6;i++)el("text",{x:x(i/10),y:70,"text-anchor":"middle",fill:"currentColor","font-size":10},i*10+"%");
+ el("line",{x1:x(v.ci_low),x2:x(v.ci_high),y1:40,y2:40,stroke:"#4de3ba","stroke-width":6});
+ el("circle",{cx:x(v.lift),cy:40,r:6,fill:"#4de3ba"});
+ el("text",{x:x(v.lift),y:20,"text-anchor":"middle",fill:"currentColor","font-size":13},pct(v.lift));
+ host.append(svg);
+ add("Native SRM: "+(d.native.payload.srm_p_value===null?"unavailable":d.native.payload.srm_p_value)+" · Snapshot "+d.native.as_of);
 }

@@ -35,3 +35,6 @@ python -m http.server 8000 --directory dashboard
 ## Evidence and limits
 
 480 exploratory missions plus 1,680 density-validation missions and 2,400 confirmatory missions. Offline staged rollout rehearsal includes injected acceptance failure and a rollback recommendation, not a remote mutation. The grid simulator uses conservative movement arbitration; blocked proposals are not physical collisions. No hardware safety claim; high-density complete-fleet reliability remains limited. Native inference unavailable at capture. Browser and Python tests run in CI.
+
+## Numeric follow-up #445
+Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.
