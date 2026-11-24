@@ -58,3 +58,6 @@ V5 adds a dimensionless cost of 3 to the first A* transition if it returns to th
 
 ## V5 rejected; conditional-cycle intervention
 Run 45504868349: V4 114/114, V5 113/114, reversals 138/67, work 13336.56/14038.92 J, time 1034.575/1039.305 s. Both zero contacts and tracking failures. V5 missed one mission at seed 4600, 24 robots. Archive all 12 rows. V5b applies identical first-step penalty 3 only if an immediate reversal occurred in the last seven settled cells (six moves); otherwise exactly V4. This is a heuristic ablation, not proof of root cause or calibrated energy cost. Compare V4/V5b on same six development scenarios, then independent unseen seeds only if accepted. Prioritize no completion regression, contacts and tracking failures, then work and reversals. No holdout reuse for tuning or remote events.
+
+## V5b development evidence
+All six paired development jobs completed successfully in run 45505620205. Full summaries archived in evidence/physics_v5b_development.json; workflow success does not imply navigation acceptance. No holdout tuning, production changes or remote events.
