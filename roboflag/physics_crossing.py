@@ -10,8 +10,8 @@ from .fleet import scenario
 # Seed 4000 places robot at (9,8), clear eastward route to (10,8).
 # Cart moves north along x=9.5, then parks at y=9.5.
 # Swept envelope across robot corridor is reserved until cart clears.
-def cart_y(t):
-    return 6.5+min(max(t,0.),6.)*.5
+def cart_y(t,phase=0.):
+    return 6.5+min(max(t+phase,0.),6.)*.5
 
 def build_crossing():
     _,_,walls,missions,_=scenario(4000,1)
@@ -23,20 +23,24 @@ def build_crossing():
     mujoco.mj_forward(m,d)
     return m,d
 
-def crossing_trial(protected=True):
+def crossing_trial(protected=True,phase=0.):
     m,d=build_crossing()
     initial=pose(m,d,0)
     goal=(10.,8.)
     mocap=int(m.body("crossing_cart").mocapid[0])
     previous=set(); observed=set(); episodes=0;trace=[]
+    min_clearance=float("inf")
+    # Initialize prescribed pose before stepping, avoiding an initial jump.
+    d.mocap_pos[mocap]=[9.5,cart_y(0,phase),.20]
+    mujoco.mj_forward(m,d)
     wait_steps=0; arrival=None; settled=0; work=0.
     # Fixed 15-second clock for both arms. Observe the entire cart schedule.
     for k in range(3000):
         t=k*DT
-        d.mocap_pos[mocap]=[9.5,cart_y(t),.20]
+        d.mocap_pos[mocap]=[9.5,cart_y(t,phase),.20]
         # Reserve whole crossing corridor until cart is >=0.65 m beyond it.
         # Both chassis/wheel envelope and cart width fit within this buffer.
-        hold=protected and cart_y(t)<8.65
+        hold=protected and cart_y(t,phase)<8.65
         if hold:
             v,w=0.,0.
             wait_steps+=1
@@ -50,11 +54,12 @@ def crossing_trial(protected=True):
         work+=float(np.sum(np.abs(d.actuator_force*d.actuator_velocity)))*DT
         x,y,yaw=pose(m,d,0)
         error=math.hypot(x-goal[0],y-goal[1])
+        min_clearance=min(min_clearance,math.hypot(x-9.5,y-cart_y(t,phase)))
         settled=settled+1 if error<=.05 and v==0 and w==0 and not hold else 0
         if settled>=40 and arrival is None:arrival=float(d.time)
         if k%20==0:trace.append({"time_s":float(d.time),"robot_pose":[x,y,yaw],"cart_position":d.xpos[m.body("crossing_cart").id].tolist(),"held":hold})
         if not np.isfinite(d.qpos).all():raise RuntimeError("Nonfinite state")
-    return {"protected":protected,"engine":mujoco.__version__,"deadline_s":15.,"arrival_s":arrival,"success":arrival is not None and error<=.05 and episodes==0,"final_error_m":error,"wait_s":wait_steps*DT,"external_contact_episodes":episodes,"contact_pairs":sorted(observed),"work_proxy_j":work,"trace":trace}
+    return {"phase_s":phase,"minimum_center_distance_m":min_clearance,"protected":protected,"engine":mujoco.__version__,"deadline_s":15.,"arrival_s":arrival,"success":arrival is not None and error<=.05 and episodes==0,"final_error_m":error,"wait_s":wait_steps*DT,"external_contact_episodes":episodes,"contact_pairs":sorted(observed),"work_proxy_j":work,"trace":trace}
 
 if __name__=="__main__":
     print(json.dumps([crossing_trial(False),crossing_trial(True)],indent=2))
