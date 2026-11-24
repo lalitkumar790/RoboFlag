@@ -16,6 +16,8 @@ def main():
             page.goto("http://127.0.0.1:8765/")
             expect(page.locator("#play")).to_be_enabled()
             expect(page.locator("#metrics .metric")).to_have_count(5)
+            expect(page.locator("#densityEvidence section")).to_have_count(3)
+            expect(page.locator("#experimentEvidence")).to_contain_text("Native results: not embedded")
             expect(page.locator("#seed option")).to_have_count(6)
             page.locator("#seed").select_option("2")
             expect(page.locator("#tickLabel")).to_have_text("1")

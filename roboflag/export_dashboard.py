@@ -5,11 +5,13 @@ from pathlib import Path
 from .fleet import simulate
 from .benchmark import benchmark
 from .rollout import rehearse
+from .validation import sweep
 
 def build(seeds=(0,1,2,3,4,5), count=12):
     return {"kind":"offline_simulation","robot_count":count,
             "replays":[{"seed":seed,"arms":{s:simulate(seed,count,s) for s in ("astar","congestion_aware")}} for seed in seeds],
             "benchmark":benchmark(20,count),
+            "validation":sweep(),
             "rollouts":{"normal":rehearse(),"fault":rehearse(inject_fault=True)}}
 
 def main():

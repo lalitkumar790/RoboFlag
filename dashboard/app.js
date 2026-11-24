@@ -23,7 +23,7 @@ function play(){if(timer!==null){stop();return;}if(Number($("tick").value)>=Numb
 function report(){const a=data.benchmark.astar,b=data.benchmark.congestion_aware;const rows=[["Mission success","success_rate",v=>(100*v).toFixed(1)+"%"],["Capped duration","mean_duration_capped_ticks",v=>v.toFixed(1)+" ticks"],["Movement steps","mean_steps",v=>v.toFixed(1)],["Waiting ticks","mean_waits",v=>v.toFixed(1)],["Blocked proposals","prevented_conflicts",v=>String(v)]];
  for(const [label,key,fmt] of rows){const row=document.createElement("div");row.className="metric";const name=document.createElement("span");name.textContent=label;row.append(name);for(const [title,value] of [["Control",a[key]],["Treatment",b[key]]]){const cell=document.createElement("div"),caption=document.createElement("small"),strong=document.createElement("strong"),bar=document.createElement("div"),fill=document.createElement("i");caption.textContent=title;strong.textContent=fmt(value);bar.className="bar";fill.style.width=(100*value/(key==="success_rate"?1:Math.max(a[key],b[key],1)))+"%";bar.append(fill);cell.append(caption,strong,bar);row.append(cell);}$("metrics").append(row);}
 }
-fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();$("rolloutMode").disabled=false;renderRollout();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
+fetch("data.json").then(r=>{if(!r.ok)throw Error("Replay data HTTP "+r.status);return r.json();}).then(d=>{if(d.kind!=="offline_simulation"||!d.replays.length)throw Error("Invalid replay data");data=d;d.replays.forEach((r,i)=>{const option=document.createElement("option");option.value=i;option.textContent="Seed "+r.seed;$("seed").append(option);});for(const id of ["play","reset","tick"])$(id).disabled=false;select();report();$("rolloutMode").disabled=false;renderRollout();renderEvidence();}).catch(e=>{$("error").textContent=e.message+". Generate data with python -m roboflag.export_dashboard and serve the dashboard directory."});
 $("seed").onchange=select;$("play").onclick=play;$("reset").onclick=()=>{stop();$("tick").value=0;render();};$("tick").oninput=()=>{stop();render();};$("speed").onchange=()=>{if(timer!==null){stop();play();}};
 
 function renderRollout(){
@@ -39,3 +39,25 @@ function renderRollout(){
  }
 }
 $("rolloutMode").onchange=renderRollout;
+
+function renderEvidence(){
+ const pct=v=>(100*v).toFixed(1)+"%";
+ const host=$("densityEvidence");
+ for(const row of data.validation.results){
+  const section=document.createElement("section"), heading=document.createElement("h3");
+  heading.textContent=row.robots+" robots per fleet";section.append(heading);
+  for(const [label,key] of [["Mission completion","completion_rate"],["All missions completed","all_completed_rate"],["Mean capped duration (ticks)","capped_duration"]]){
+   const line=document.createElement("div");line.className="metric";
+   for(const value of [label,...["astar","congestion_aware"].map((arm,i)=>(i?"Adaptive: ":"Control: ")+(key==="capped_duration"?row.arms[arm][key].toFixed(1):pct(row.arms[arm][key])))]){const el=document.createElement("span");el.textContent=value;line.append(el);}
+   section.append(line);
+  }
+  host.append(section);
+ }
+ const e=$("experimentEvidence");
+ const count=data.robot_count;
+ for(const [label,arm] of [["Control","astar"],["Treatment","congestion_aware"]]){
+  const b=data.benchmark[arm], full=b.per_seed.filter(s=>s.successes===count).length;
+  const p=document.createElement("p");p.textContent=label+" exploratory full-fleet success: "+full+"/"+b.per_seed.length+" ("+pct(full/b.per_seed.length)+")";e.append(p);
+ }
+ const p=document.createElement("p");p.textContent="Assignment unit: independent fleet · 50/50 planned split · Primary event: fleet_all_missions_completed · Native results: not embedded";e.append(p);
+}
