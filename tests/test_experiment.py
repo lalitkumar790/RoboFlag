@@ -6,19 +6,18 @@ from roboflag.guardrails import decide
 
 def client(enrolled=True):
     c=Mock()
-    f=c.get_identity_flags.return_value
-    f.is_feature_enabled.return_value=True
-    f.get_flag.return_value=SimpleNamespace(value="congestion_aware",variant="adaptive",
-        experiment=SimpleNamespace(in_experiment=enrolled))
+    c.get_experiment_flag.return_value=SimpleNamespace(enabled=True,value="congestion_aware",variant="adaptive",
+        experiment=SimpleNamespace(id=440,in_experiment=enrolled))
     return c
 
 def test_native_attribution():
     c=client()
     r=run(c,7,4,"fleet-123")
-    c.track_exposure_event.assert_called_once_with(FLAG,identifier="fleet-123",value="adaptive")
+    c.get_experiment_flag.assert_called_once_with(FLAG,identifier="fleet-123")
+    c.track_exposure_event.assert_not_called()
     c.track_event.assert_any_call("fleet_completion_rate",identifier="fleet-123",value=r["successes"]/4)
     assert r["strategy"]=="congestion_aware"
-    assert c.method_calls[1].__str__().startswith("call.track_exposure_event")
+    assert c.method_calls[0].__str__().startswith("call.get_experiment_flag")
 
 def test_unenrolled_rejected():
     c=client(False)
@@ -38,11 +37,12 @@ def test_batch_closes_and_uses_unique_identities():
     c=client()
     lines=[]
     run_batch(c,2,4,1000,emit=lines.append)
-    c.close.assert_called_once_with()
+    c.close.assert_called_once_with(timeout_seconds=30)
     rows=[json.loads(line) for line in lines]
     assert len({r["identity"] for r in rows})==2
     assert [r["seed"] for r in rows]==[1000,1001]
-    assert c.method_calls[-1].__str__()=="call.close()"
+    assert c.flush_events.call_count==2
+    assert c.method_calls[-1].__str__()=="call.close(timeout_seconds=30)"
 
 def test_batch_closes_on_submission_failure():
     from roboflag.experiment import run_batch
@@ -50,5 +50,38 @@ def test_batch_closes_on_submission_failure():
     c.track_event.side_effect=RuntimeError("submission failure")
     with pytest.raises(RuntimeError,match="submission failure"):
         run_batch(c,2,4,1000,emit=lambda _: None)
-    c.close.assert_called_once_with()
-    c.track_exposure_event.assert_called_once()
+    c.close.assert_called_once_with(timeout_seconds=30)
+    c.get_experiment_flag.assert_called_once()
+
+def test_delivery_warning_aborts_batch():
+    import logging
+    from roboflag.experiment import run_batch, DeliveryWarnings
+    c=client()
+    warnings=DeliveryWarnings()
+    c.flush_events.side_effect=lambda: warnings.emit(logging.LogRecord("flagsmith.analytics",logging.WARNING,"",0,"Event buffer was full: dropped the 14 oldest events",(),None))
+    with pytest.raises(RuntimeError,match="SDK delivery warning"):
+        run_batch(c,4,4,1010,delivery_warnings=warnings)
+    c.get_experiment_flag.assert_called_once()
+    c.close.assert_called_once_with(timeout_seconds=30)
+
+def test_real_sdk_buffer_and_flush(monkeypatch):
+    import json
+    from flagsmith import Flagsmith, EventProcessorConfig
+    from flagsmith.models import Flag, ExperimentMetadata
+    from flagsmith.analytics import EventProcessor
+    payloads=[]
+    def post(self,payload):
+        payloads.extend(json.loads(payload)["events"])
+        return SimpleNamespace(status_code=202)
+    monkeypatch.setattr(EventProcessor,"_post",post)
+    sdk=Flagsmith(environment_key="test-key",enable_events=True,event_processor_config=EventProcessorConfig(max_buffer_items=1000))
+    flag=Flag(enabled=True,value="congestion_aware",feature_id=303042,feature_name=FLAG,variant="adaptive",experiment=ExperimentMetadata(id=440,name="test",in_experiment=True))
+    monkeypatch.setattr(sdk,"get_identity_flags",lambda *a,**k:SimpleNamespace(get_flag=lambda _:flag))
+    from roboflag.experiment import run_batch
+    run_batch(sdk,4,1,1010,emit=lambda _:None)
+    exposures=[p for p in payloads if p["event"]=="$flag_exposure"]
+    assert len(exposures)==4
+    assert len({p["identifier"] for p in exposures})==4
+    assert all(p["metadata"]["experiment_id"]==440 for p in exposures)
+    assert len([p for p in payloads if p["event"]=="fleet_completion_rate"])==4
+    assert len([p for p in payloads if p["event"]=="fleet_mean_duration"])==4
