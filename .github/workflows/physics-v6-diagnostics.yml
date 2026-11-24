@@ -1,0 +1,41 @@
+name: V6 decision diagnostics
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-v6-diagnostics.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - robots: 24
+            seed: 5000
+            deadline: 200
+          - robots: 24
+            seed: 5001
+            deadline: 300
+          - robots: 24
+            seed: 5001
+            deadline: 180
+          - robots: 24
+            seed: 5000
+            deadline: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_planner.py tests/test_physics_dynamic_fleet.py
+      - run: python -m roboflag.physics_dynamic_fleet --robots ${{ matrix.robots }} --seed ${{ matrix.seed }} --modes cycle_aware deadline_aware --diagnose --deadline ${{ matrix.deadline }} > v6-diagnostics.json
+      - run: python -c 'import json; print(json.dumps([{k:v for k,v in r.items() if k!="trace"} for r in json.load(open("v6-diagnostics.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v6-diagnostics-${{ matrix.robots }}-${{ matrix.seed }}-${{ matrix.deadline }}
+          path: v6-diagnostics.json

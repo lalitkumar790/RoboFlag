@@ -49,7 +49,7 @@ def deadline_penalty(history,goal,remaining_s):
     slack=remaining_s-5.*distance-12.
     return cycle_penalty(history)*max(0.,min(1.,slack/60.))
 
-def simulate(seed,count,strategy,deadline=300.):
+def simulate(seed,count,strategy,deadline=300.,diagnose=False):
     if strategy not in ("congestion_aware","progress_aware","reversal_aware","cycle_aware","deadline_aware"):raise ValueError(strategy)
     width,height,walls,missions,_=scenario(seed,count)
     m,d=build(seed,count)
@@ -58,6 +58,8 @@ def simulate(seed,count,strategy,deadline=300.):
     histories=[[a] for a in cells];completed=[None]*count
     waits=0;gate_rejections=0;episodes=0;cart_episodes=0;previous=set();work=0.;tick=0
     tracking_failure=None;trace=[];deadline_reached=False
+    decisions=Counter()
+    decision_examples=[]
     limit=round(deadline/DT)
     while round(d.time/DT)<limit and not all(t is not None for t in completed):
         tick+=1
@@ -79,6 +81,21 @@ def simulate(seed,count,strategy,deadline=300.):
                 route=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(histories[i][:-1]))
             else:
                 route=plan(cells[i],goals[i],width,height,walls,congestion)
+            if diagnose and strategy=="deadline_aware":
+                decisions["decisions"]+=1
+                base=cycle_penalty(history)
+                decisions["cycle_active"]+=int(base>0)
+                if penalty<base-1e-9:
+                    decisions["penalty_reduced"]+=1
+                    decisions["penalty_disabled"]+=int(penalty==0)
+                    shadow=plan_physics(cells[i],goals[i],width,height,walls,congestion,occupied|reserved,pose(m,d,i)[2],Counter(history[:-1]),previous_cell=history[-2] if len(history)>1 else None,reversal_penalty=base)
+                    decisions["route_changed"]+=int(route!=shadow)
+                    def accepted(r):
+                        return r[1] if len(r)>1 and r[1] not in occupied|reserved and edge_allowed(cells[i],r[1],interval) else cells[i]
+                    changed=accepted(route)!=accepted(shadow)
+                    decisions["accepted_target_changed"]+=int(changed)
+                    if changed and len(decision_examples)<30:
+                        decision_examples.append({"tick":tick,"robot":i,"time_s":float(d.time),"penalty":penalty,"baseline_penalty":base,"actual_target":accepted(route),"shadow_target":accepted(shadow)})
             if len(route)>1 and route[1] not in occupied|reserved:
                 if edge_allowed(cells[i],route[1],interval):
                     targets[i]=route[1];reserved.add(route[1]);continue
@@ -108,11 +125,12 @@ def simulate(seed,count,strategy,deadline=300.):
             if target!=cells[i]:histories[i].append(target)
             cells[i]=target
             if completed[i] is None and target==goals[i]:completed[i]=float(d.time)
-    return {"seed":seed,"robots":count,"strategy":strategy,"deadline_s":deadline,"simulated_seconds":float(d.time),"successes":sum(t is not None for t in completed),"mission_completion_seconds":completed,"external_contact_episodes":episodes,"cart_contact_episodes":cart_episodes,"tracking_failure":tracking_failure,"gate_rejections":gate_rejections,"waits":waits,"work_proxy_j":work,"reversals":sum(sum(p[j]==p[j-2] for j in range(2,len(p))) for p in histories),"trace":trace}
+    return {"decision_diagnostics":dict(decisions),"decision_examples":decision_examples,"seed":seed,"robots":count,"strategy":strategy,"deadline_s":deadline,"simulated_seconds":float(d.time),"successes":sum(t is not None for t in completed),"mission_completion_seconds":completed,"external_contact_episodes":episodes,"cart_contact_episodes":cart_episodes,"tracking_failure":tracking_failure,"gate_rejections":gate_rejections,"waits":waits,"work_proxy_j":work,"reversals":sum(sum(p[j]==p[j-2] for j in range(2,len(p))) for p in histories),"trace":trace}
 
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--robots",type=int,default=6);p.add_argument("--seed",type=int,default=4600)
     p.add_argument("--modes",nargs="+",choices=["congestion_aware","progress_aware","reversal_aware","cycle_aware","deadline_aware"],default=["congestion_aware","progress_aware"])
     p.add_argument("--deadline",type=float,default=300.)
+    p.add_argument("--diagnose",action="store_true")
     a=p.parse_args()
-    print(json.dumps([simulate(a.seed,a.robots,s,a.deadline) for s in a.modes]))
+    print(json.dumps([simulate(a.seed,a.robots,s,a.deadline,a.diagnose) for s in a.modes]))
