@@ -1,0 +1,3 @@
+# Additional validation
+The frozen additional sweep uses seeds 200–219 with 6, 12 and 24 robots per fleet, both homogeneous controllers. This is new offline seed validation, not independent hardware validation. It checks unique occupancy, bounds, walls, active obstacles, cardinal movement and conservative occupied-cell exclusion at every tick. It does not change simulator behaviour or emit Flagsmith events. The original benchmark used seeds 0–19, rollout used 20–23 and native pilot is reserved for 1000 onward.
+Chromium smoke tests check replay loading, playback, timeline, scenario changes, rollout audit switching, canvas drawing and narrow viewport overflow. The test uses a local static server, not the deployed production URL.

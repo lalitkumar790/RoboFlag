@@ -13,6 +13,10 @@ jobs:
       - run: python -m roboflag.benchmark --seeds 20 --robots 12 > benchmark.json
       - run: python -m roboflag.export_dashboard
       - run: node --check dashboard/app.js
+      - run: pip install playwright==1.51.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/browser_smoke.py
+      - run: python -m roboflag.validation > validation.json
       - run: python -m roboflag.rollout > rollout.json
       - run: python -m roboflag.rollout --fault > rollout-fault.json
       - uses: actions/upload-artifact@v4
@@ -22,6 +26,7 @@ jobs:
             benchmark.json
             rollout.json
             rollout-fault.json
+            validation.json
       - uses: actions/upload-artifact@v4
         with:
           name: mission-control
