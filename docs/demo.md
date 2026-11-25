@@ -12,3 +12,6 @@ Completion update: experiment 442 completed with control retained. Show the actu
 
 ## Numeric follow-up #445
 Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.
+
+## Physical preview storyboard
+Open physics.html after generating native replay. Choose 24 robots, play at 15x, orbit, scrub to end; compare V2 and V4 on the same seed. Show archived V3/V5 failures and V5b/V6 mixed results. Return to native #445 and offline rollout rehearsal. Browser geometry is approximate, recorded planar poses are real MuJoCo outputs. No actual remote rollback or hardware claim.
