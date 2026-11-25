@@ -38,3 +38,16 @@ Authenticated production HTTP checks succeeded. Anonymous access, video recordin
 
 ## Numeric follow-up #445
 Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.
+
+## Physical research and interactive preview
+The integration branch mission-control-3d adds six regenerated native MuJoCo runs (6/12/24 robots, seed 4700) and a synchronized browser replay. The preview is https://roboflag-e5jxeyg6z-lalitsikarwar2001-6516s-projects.vercel.app/physics.html (authenticated assets verified, latest release-decision panel, may require Vercel login). Local Chromium tests passed in run 45560797100 and original regression in run 45560797207. Reproduce with pip install -r requirements-physics.txt, python -m roboflag.export_physical_evidence, python -m roboflag.export_physical, and the existing dashboard commands.
+- Static frozen physical holdout: V2 146/168, V4 168/168.
+- Moving-cart frozen holdout: V2 148/168, V4 168/168.
+- Frozen V6 deadline holdout: V4 303/324, V5b 301/324, V6 302/324, all zero external contact episodes and tracking failures. Source run 45509923670; all 54 summaries archived in evidence/physics_v6_holdout.json.
+- Total research attempts 10,872 (6,960 grid plus 3,912 physical), including comparative reruns and repeated assignments; regenerated display traces excluded. Not independent robot-level samples.
+- V3 livelock, V5 completion regression and mixed V5b/V6 results are reported, not hidden. V4 remains preferred. The local physical evidence gate compares completion and contacts against V4; a separate grid rollout rehearsal shows injected failure rollback. These are not new Flagsmith assignments or actual remote rollback.
+- Known obstacle schedules, modeled friction and nominal geometry limit external validity. No hardware safety certification. Actuator work proxy is not battery energy. Browser renders measured planar pose and heading using approximate 3D geometry.
+- Record a real screen demo, verify anonymous reviewer access, confirm experiment #445 status, and submit manually. No submission receipt or video exists yet.
+
+## Final verification checkpoint — 25 November 2026
+Read-only Flagsmith #445 verification: running, n=100 per arm, unchanged inference, no rollout decision, is_final=false. Do not claim winner deployed. The user must complete the experiment with an explicit rollout choice in Flagsmith if desired. No new exposures, production promotion or permission changes were performed. The verified preview is not yet verified anonymously. Video and submission receipt are outstanding.

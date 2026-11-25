@@ -1,0 +1,30 @@
+name: Physical 3D dashboard preview
+on:
+  push:
+    branches: [mission-control-3d]
+  workflow_dispatch:
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt -r requirements.txt playwright==1.51.0
+      - run: python -m roboflag.export_dashboard
+      - run: python -m roboflag.export_physical_evidence
+      - run: python -m roboflag.export_physical
+      - run: node --check dashboard/physics.js
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/browser_physical.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: physical-dashboard
+          path: dashboard/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-render-screenshot
+          path: physical-preview.png

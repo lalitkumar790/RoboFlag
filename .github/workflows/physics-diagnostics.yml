@@ -1,0 +1,32 @@
+name: Physics navigation progress diagnostics
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-diagnostics.yml']
+  workflow_dispatch:
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - robots: 6
+            seed: 4301
+          - robots: 24
+            seed: 4300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_fleet.py tests/test_physics_planner.py
+      - run: python -m roboflag.physics_fleet --robots ${{ matrix.robots }} --seeds ${{ matrix.seed }} --modes astar congestion_aware physics_aware > diagnostics.json
+      - run: python -c 'import json; print(json.dumps([{**{k:r[k] for k in ("seed","robots","strategy","successes","simulated_seconds")}, "progress":[{k:v for k,v in p.items() if k!="path"} for p in r["progress_diagnostics"]]} for r in json.load(open("diagnostics.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: diagnostics-${{ matrix.robots }}-${{ matrix.seed }}
+          path: diagnostics.json

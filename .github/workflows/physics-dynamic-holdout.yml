@@ -1,0 +1,32 @@
+name: Frozen dynamic fleet holdout
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-dynamic-holdout.yml']
+  workflow_dispatch:
+jobs:
+  holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        robots: [6,12,24]
+        seed: [4700,4701,4702,4703]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 109edc731ee16b367c68819e506196bd9aabd1c1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_dynamic_fleet.py
+      - run: python -m roboflag.physics_dynamic_fleet --robots ${{ matrix.robots }} --seed ${{ matrix.seed }} > dynamic-holdout.json
+      - run: python -c 'import json; print(json.dumps([{k:v for k,v in r.items() if k!="trace"} for r in json.load(open("dynamic-holdout.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dynamic-holdout-${{ matrix.robots }}-${{ matrix.seed }}
+          path: dynamic-holdout.json

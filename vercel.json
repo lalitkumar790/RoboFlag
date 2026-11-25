@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "python3 -m roboflag.export_dashboard",
+  "buildCommand": "/tmp/roboflag-preview/bin/python -m roboflag.export_dashboard && /tmp/roboflag-preview/bin/python -m roboflag.export_physical_evidence && /tmp/roboflag-preview/bin/python -m roboflag.export_physical",
   "outputDirectory": "dashboard",
-  "installCommand": "echo No external build dependencies"
+  "installCommand": "python3 -m venv /tmp/roboflag-preview && /tmp/roboflag-preview/bin/pip install -r requirements-physics.txt"
 }

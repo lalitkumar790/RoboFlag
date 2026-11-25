@@ -4,6 +4,51 @@ Experiment before you deploy. Measure before you scale.
 
 RoboFlag uses native Flagsmith experiments to evaluate robot fleet navigation policies in a seeded grid warehouse simulator. Whole fleets are randomized to avoid within-fleet interference.
 
+## Try the application
+
+- [3D physical mission control](https://roboflag-e5jxeyg6z-lalitsikarwar2001-6516s-projects.vercel.app/physics.html) — validated preview; Vercel sign-in may be required.
+- [Native experiment dashboard](https://roboflag-e5jxeyg6z-lalitsikarwar2001-6516s-projects.vercel.app/) — actual Flagsmith snapshots, grid replay and offline rollout rehearsal.
+- [Passing renderer CI](https://github.com/lalitkumar790/RoboFlag/actions/runs/45560797100) · [passing regression CI](https://github.com/lalitkumar790/RoboFlag/actions/runs/45560797207).
+- [Demo narration](docs/demo.md) · [submission handoff](docs/submission.md).
+
+## How it works
+
+```mermaid
+flowchart LR
+  A[Flagsmith fleet identity assignment] --> B[Grid simulator: control or adaptive]
+  B --> C[Measured fleet outcomes]
+  C --> D[Native experiment inference]
+  E[Independent MuJoCo physics runs] --> F[Recorded poses and evidence]
+  D --> G[Mission Control dashboard]
+  F --> G
+  G --> H[Offline release decision and rollback rehearsal]
+```
+
+The native experiment and physical research are separate evidence streams. The browser plays measured poses, not live MuJoCo physics. The physical release gate and grid rollback rehearsal do not mutate Flagsmith.
+
+## Independent physical validation
+
+| Frozen campaign | Reference | Candidate |
+|---|---:|---:|
+| Static racks, V2 vs V4 | 146/168 | 168/168 |
+| Moving cart, V2 vs V4 | 148/168 | 168/168 |
+| Deadline stress, V4 vs V5b | 303/324 | 301/324 |
+| Deadline stress, V4 vs V6 | 303/324 | 302/324 |
+
+V4 remains the preferred physical controller. V3 exhibited livelock, V5 reduced reliability, and V5b/V6 did not establish superiority. See [physical validation protocol](docs/physics-validation.md) and [complete V6 holdout](evidence/physics_v6_holdout.json). Total research attempts: 10,872 (6,960 grid, 3,912 physical), including repeated assignments and comparative reruns, excluding regenerated display traces. These are not independent robot-level observations. No hardware safety certification.
+
+For the 3D replay, install the pinned MuJoCo engine and generate the measured pose data before serving:
+
+```sh
+pip install -r requirements-physics.txt
+python -m roboflag.export_dashboard
+python -m roboflag.export_physical_evidence
+python -m roboflag.export_physical
+python -m http.server 8000 --directory dashboard
+```
+
+Open http://localhost:8000/physics.html, select 24 robots and scrub the synchronized timeline. Seed 4700 yields V2 16/24 versus V4 24/24. Camera drag, shift-drag, wheel zoom and top view are supported. Browser geometry approximates the physical model.
+
 ## Confirmatory experiment #442
 
 200 unique fleets, 12 robots each, seeds 2000–2199. Primary endpoint: every robot completes its mission.
@@ -37,4 +82,4 @@ python -m http.server 8000 --directory dashboard
 480 exploratory missions plus 1,680 density-validation missions and 2,400 confirmatory missions. Offline staged rollout rehearsal includes injected acceptance failure and a rollback recommendation, not a remote mutation. The grid simulator uses conservative movement arbitration; blocked proposals are not physical collisions. No hardware safety claim; high-density complete-fleet reliability remains limited. Native inference unavailable at capture. Browser and Python tests run in CI.
 
 ## Numeric follow-up #445
-Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.
+Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Read-only verification on 25 November 2026 confirmed the experiment is still running, with unchanged captured results, no rollout decision and is_final=false. No further traffic planned. Combined offline and two native experiments: 6,960 missions.

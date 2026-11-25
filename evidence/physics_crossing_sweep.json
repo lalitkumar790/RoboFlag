@@ -1,0 +1,312 @@
+{
+  "source_run": 45497969572,
+  "source_job": 138813392208,
+  "controller_commit": "4c48f6ca0e16dc369d6a77154242eda05159667d",
+  "rows": [
+    {
+      "phase_s": -2,
+      "minimum_center_distance_m": 0.4652789838911962,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.2599999999999527,
+      "success": true,
+      "final_error_m": 0.03472201954232775,
+      "wait_s": 0,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0602006764390035
+    },
+    {
+      "phase_s": -2,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 9.570000000000096,
+      "success": true,
+      "final_error_m": 0.03466369682752938,
+      "wait_s": 6.3,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0660992224159465
+    },
+    {
+      "phase_s": -1,
+      "minimum_center_distance_m": 0.4652789839128837,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.2599999999999527,
+      "success": true,
+      "final_error_m": 0.03472201954232775,
+      "wait_s": 0,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0602006764390035
+    },
+    {
+      "phase_s": -1,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 8.56999999999994,
+      "success": true,
+      "final_error_m": 0.03466369682753826,
+      "wait_s": 5.3,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222431294
+    },
+    {
+      "phase_s": 0,
+      "minimum_center_distance_m": 0.46428119921323635,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.2599999999999527,
+      "success": true,
+      "final_error_m": 0.03472201954232775,
+      "wait_s": 0,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0602006764390035
+    },
+    {
+      "phase_s": 0,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 7.569999999999861,
+      "success": true,
+      "final_error_m": 0.03466369682740859,
+      "wait_s": 4.3,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222367799
+    },
+    {
+      "phase_s": 0.5,
+      "minimum_center_distance_m": 0.4213209084401692,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.2599999999999527,
+      "success": true,
+      "final_error_m": 0.03472201954232775,
+      "wait_s": 0,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0602006764390035
+    },
+    {
+      "phase_s": 0.5,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 7.0699999999998715,
+      "success": true,
+      "final_error_m": 0.03466369682747431,
+      "wait_s": 3.8000000000000003,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222393309
+    },
+    {
+      "phase_s": 1,
+      "minimum_center_distance_m": 0.32796330487087316,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": null,
+      "success": false,
+      "final_error_m": 1.90995142153814,
+      "wait_s": 0,
+      "external_contact_episodes": 32,
+      "contact_pairs": [
+        [
+          "crossing_cart_geom",
+          "robot:0"
+        ]
+      ],
+      "work_proxy_j": 172.8595852054195
+    },
+    {
+      "phase_s": 1,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 6.569999999999882,
+      "success": true,
+      "final_error_m": 0.03466369682748497,
+      "wait_s": 3.3000000000000003,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222384179
+    },
+    {
+      "phase_s": 1.5,
+      "minimum_center_distance_m": 0.3184915296073529,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 6.574999999999882,
+      "success": false,
+      "final_error_m": 0.03403786474575317,
+      "wait_s": 0,
+      "external_contact_episodes": 7,
+      "contact_pairs": [
+        [
+          "crossing_cart_geom",
+          "robot:0"
+        ]
+      ],
+      "work_proxy_j": 24.258923707152945
+    },
+    {
+      "phase_s": 1.5,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 6.069999999999893,
+      "success": true,
+      "final_error_m": 0.03466369682751872,
+      "wait_s": 2.8000000000000003,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222395942
+    },
+    {
+      "phase_s": 2,
+      "minimum_center_distance_m": 0.31475088941628954,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 4.434999999999928,
+      "success": false,
+      "final_error_m": 0.03420584552185184,
+      "wait_s": 0,
+      "external_contact_episodes": 3,
+      "contact_pairs": [
+        [
+          "crossing_cart_geom",
+          "robot:0"
+        ]
+      ],
+      "work_proxy_j": 26.404355261915626
+    },
+    {
+      "phase_s": 2,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 5.5699999999999035,
+      "success": true,
+      "final_error_m": 0.03466369682751872,
+      "wait_s": 2.3000000000000003,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.06609922240825
+    },
+    {
+      "phase_s": 2.5,
+      "minimum_center_distance_m": 0.31211847281904076,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.8449999999999402,
+      "success": false,
+      "final_error_m": 0.034759893591782776,
+      "wait_s": 0,
+      "external_contact_episodes": 6,
+      "contact_pairs": [
+        [
+          "crossing_cart_geom",
+          "robot:0"
+        ]
+      ],
+      "work_proxy_j": 19.684191864846078
+    },
+    {
+      "phase_s": 2.5,
+      "minimum_center_distance_m": 0.5000000000056226,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 5.069999999999914,
+      "success": true,
+      "final_error_m": 0.034663696827516945,
+      "wait_s": 1.8,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099222413704
+    },
+    {
+      "phase_s": 3,
+      "minimum_center_distance_m": 0.3779065035732357,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.4149999999999494,
+      "success": false,
+      "final_error_m": 0.03454720944351641,
+      "wait_s": 0,
+      "external_contact_episodes": 3,
+      "contact_pairs": [
+        [
+          "crossing_cart_geom",
+          "robot:0"
+        ]
+      ],
+      "work_proxy_j": 9.097333343360194
+    },
+    {
+      "phase_s": 3,
+      "minimum_center_distance_m": 0.5000000000062085,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 4.569999999999925,
+      "success": true,
+      "final_error_m": 0.0346636968275205,
+      "wait_s": 1.3,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0660992223942
+    },
+    {
+      "phase_s": 4,
+      "minimum_center_distance_m": 0.7068808161577509,
+      "protected": false,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.2599999999999527,
+      "success": true,
+      "final_error_m": 0.03472201954232775,
+      "wait_s": 0,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.0602006764390035
+    },
+    {
+      "phase_s": 4,
+      "minimum_center_distance_m": 0.7071085430675434,
+      "protected": true,
+      "engine": "3.3.7",
+      "deadline_s": 15,
+      "arrival_s": 3.569999999999946,
+      "success": true,
+      "final_error_m": 0.03466369655153499,
+      "wait_s": 0.3,
+      "external_contact_episodes": 0,
+      "contact_pairs": [],
+      "work_proxy_j": 5.066099308716941
+    }
+  ]
+}

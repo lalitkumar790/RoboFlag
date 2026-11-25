@@ -12,3 +12,14 @@ Completion update: experiment 442 completed with control retained. Show the actu
 
 ## Numeric follow-up #445
 Prespecified fresh seeds 3000–3199; 200 fleets, 100 per arm, 2,400 simulated missions. Native metric 405 mean completion: 67.00% control vs 97.17% adaptive; native relative lift +45.02%, 95% credible interval +37.58% to +52.47%, reported chance to win 100%. Native SRM is null; observed allocation is balanced. Both numeric moments and counts reconcile with the archived original records. The reported probability is model output, not physical certainty. Experiment was running at snapshot; no further traffic planned. Combined offline and two native experiments: 6,960 missions.
+
+## Physical preview storyboard
+Open physics.html after generating native replay. Choose 24 robots, play at 15x, orbit, scrub to end; compare V2 and V4 on the same seed. Show archived V3/V5 failures and V5b/V6 mixed results. Return to native #445 and offline rollout rehearsal. Browser geometry is approximate, recorded planar poses are real MuJoCo outputs. No actual remote rollback or hardware claim.
+
+## Final three-minute narration
+0:00–0:25: "RoboFlag uses feature flags to test robotic fleet software before deployment. We randomize entire fleets, not interacting robots."
+0:25–0:55: Show #445 native numeric metric: 67.00% versus 97.17%, +45.02% relative lift, native reported chance to win 100% at captured snapshot. Not a guarantee; no physical controller was assigned by this native experiment.
+0:55–1:35: Open physical preview, choose 24 robots, scrub/play, orbit. At seed 4700 V2 16/24 and V4 24/24. Explain recorded MuJoCo physics vs browser geometry.
+1:35–2:05: Show frozen evidence, including V3 and V5 failures and final V6 holdout; V4 303/324 versus V6 302/324. More complexity did not win.
+2:05–2:35: Select V6 and evaluate HOLD; select V4 and evaluate ADVANCE REHEARSAL; inject failure and show ROLLBACK REHEARSAL. Explain grid rollout replay is offline and separate from physical gate; native #442 retained control.
+2:35–3:00: Show reproducibility, archived outcomes, CI, and limits. Ask judges to evaluate evidence-driven release decisions, not a claim of real hardware readiness.

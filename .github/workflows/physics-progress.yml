@@ -1,0 +1,38 @@
+name: Progress-aware navigation development
+on:
+  push:
+    branches: [physics-validation]
+    paths: ['.github/workflows/physics-progress.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - robots: 6
+            seed: 4301
+          - robots: 24
+            seed: 4300
+          - robots: 6
+            seed: 4400
+          - robots: 12
+            seed: 4400
+          - robots: 24
+            seed: 4400
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-physics.txt
+      - run: python -m pytest -q tests/test_physics_planner.py tests/test_physics_fleet.py
+      - run: python -m roboflag.physics_fleet --robots ${{ matrix.robots }} --seeds ${{ matrix.seed }} --modes congestion_aware physics_aware progress_aware > progress.json
+      - run: python -c 'import json; print(json.dumps([{**{k:v for k,v in r.items() if k not in ("trace","progress_diagnostics")}, "revisits":sum(p["revisits"] for p in r["progress_diagnostics"]), "reversals":sum(p["immediate_reversals"] for p in r["progress_diagnostics"])} for r in json.load(open("progress.json"))],indent=2))'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: progress-${{ matrix.robots }}-${{ matrix.seed }}
+          path: progress.json
