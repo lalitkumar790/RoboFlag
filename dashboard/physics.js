@@ -64,3 +64,19 @@ for(const [id] of panels){const canvas=el(id);let drag=null;canvas.onpointerdown
 fetch("physical-data/manifest.json").then(r=>{if(!r.ok)throw Error("Generate native replay: python -m roboflag.export_physical");return r.json();}).then(d=>{manifest=d;d.scenarios.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s.robots+" robots / seed "+s.seed;el("fleetSize").append(o);});el("fleetSize").disabled=false;return load();}).catch(error);
 fetch("physical-evidence.json").then(r=>{if(!r.ok)throw Error("Evidence unavailable");return r.json();}).then(d=>{for(const campaign of d.campaigns){const section=document.createElement("section");const h=document.createElement("h3");h.textContent=campaign.label;section.append(h);for(const a of campaign.arms){const p=document.createElement("p");p.textContent=a.label+": "+a.successes+"/"+a.missions+" completed · "+a.contacts+" contacts";section.append(p);}const link=document.createElement("a");link.href=campaign.source;link.textContent="Verified benchmark ↗";section.append(link);el("physicalEvidence").append(section);}}).catch(error);
 requestAnimationFrame(animate);
+
+let holdout, releaseData;
+function evaluateRelease(){
+ if(!holdout||!releaseData)return;
+ const chosen=el("candidate").value,base=holdout.arms.find(x=>x.label==="V4"),candidate=holdout.arms.find(x=>x.label===chosen);
+ const result=releaseData.rollouts[el("injectFault").checked?"fault":"normal"];
+ const eligible=candidate.successes>=base.successes&&candidate.contacts<=base.contacts;
+ const fault=el("injectFault").checked;
+ const decision=!eligible?"HOLD — lower frozen completion than V4":fault?"ROLLBACK REHEARSAL — injected grid acceptance failure":"ADVANCE REHEARSAL — physical reference meets completion/contact gate";
+ el("releaseDecision").textContent=decision+" · "+chosen+" "+candidate.successes+"/"+candidate.missions+" versus V4 "+base.successes+"/"+base.missions+". No live flag mutation.";
+ const host=el("releaseStages");host.replaceChildren();
+ if(!eligible)return;
+ for(const stage of result.history){const row=document.createElement("div");row.className="audit";for(const v of [stage.stage_percent+"% target",stage.assigned+"/"+stage.missions+" assigned",(100*stage.effective_success_rate).toFixed(1)+"% grid success",stage.injected_losses+" injected losses",stage.decision]){const span=document.createElement("span");span.textContent=v;row.append(span);}host.append(row);}
+}
+Promise.all([fetch("physical-evidence.json").then(r=>{if(!r.ok)throw Error("Physical evidence unavailable");return r.json();}),fetch("data.json").then(r=>{if(!r.ok)throw Error("Rollout data unavailable");return r.json();})]).then(([p,d])=>{holdout=p.campaigns.find(c=>c.label.startsWith("Frozen V6 deadline holdout"));if(!holdout)throw Error("Frozen holdout missing");releaseData=d;el("evaluateRelease").disabled=false;evaluateRelease();}).catch(error);
+el("evaluateRelease").onclick=evaluateRelease;

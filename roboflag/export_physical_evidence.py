@@ -12,7 +12,8 @@ def main():
         ("physics_v5_development","V5 fixed reversal penalty — rejected"),
         ("physics_v5b_holdout","V5b independent validation — mixed efficiency"),
         ("physics_v6_development","V6 development — no incremental benefit over V5b"),
-        ("physics_v6_diagnostics","V6 deadline stress — exploratory")]:
+        ("physics_v6_diagnostics","V6 deadline stress — exploratory"),
+        ("physics_v6_holdout","Frozen V6 deadline holdout — V4 remains preferred")]:
         d=json.loads((root/"evidence"/(name+".json")).read_text())
         arms=[]
         for mode in sorted({r["strategy"] for r in d["rows"]}):
