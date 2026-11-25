@@ -23,3 +23,5 @@ Open physics.html after generating native replay. Choose 24 robots, play at 15x,
 1:35–2:05: Show frozen evidence, including V3 and V5 failures and final V6 holdout; V4 303/324 versus V6 302/324. More complexity did not win.
 2:05–2:35: Select V6 and evaluate HOLD; select V4 and evaluate ADVANCE REHEARSAL; inject failure and show ROLLBACK REHEARSAL. Explain grid rollout replay is offline and separate from physical gate; native #442 retained control.
 2:35–3:00: Show reproducibility, archived outcomes, CI, and limits. Ask judges to evaluate evidence-driven release decisions, not a claim of real hardware readiness.
+
+Final update: show completed #445 and actual 100% adaptive Development allocation. Native results finalized; no hardware rollout. The offline rollback rehearsal remains separate.

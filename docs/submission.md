@@ -51,3 +51,6 @@ The integration branch mission-control-3d adds six regenerated native MuJoCo run
 
 ## Final verification checkpoint — 25 November 2026
 Read-only Flagsmith #445 verification: running, n=100 per arm, unchanged inference, no rollout decision, is_final=false. Do not claim winner deployed. The user must complete the experiment with an explicit rollout choice in Flagsmith if desired. No new exposures, production promotion or permission changes were performed. The verified preview is not yet verified anonymously. Video and submission receipt are outstanding.
+
+## Final native rollout — 26 November 2026 IST
+Experiment #445 completed; final results is_final=true. Adaptive selected (variant 36620); published Development version 9dd83a5e-0721-4c09-be15-8e5569058882 verified enabled, allocation 100%. Native inference unchanged. No physical or Production Flagsmith rollout claimed. Earlier running-status statements in this document describe historical checkpoints only.

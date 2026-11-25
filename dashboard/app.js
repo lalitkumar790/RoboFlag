@@ -72,6 +72,7 @@ function renderNumeric(){
  function add(s){const p=document.createElement("p");p.textContent=s;host.append(p);}
  add("Native chance to win: "+pct(v.chance_to_win)+" · Relative lift: +"+pct(v.lift));
  add("Control completion: "+pct(m.variants.control.sum/m.variants.control.n)+" · Adaptive completion: "+pct(m.variants.adaptive.sum/m.variants.adaptive.n));
+ if(d.completion) add("Completed · Finalized: "+d.native.is_final+" · Actual "+d.completion.environment+" rollout: "+d.completion.variant_key+" "+d.completion.percentage_allocation+"% (not physical deployment)");
  add("95% credible interval: +"+pct(v.ci_low)+" to +"+pct(v.ci_high));
  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
  svg.setAttribute("viewBox","0 0 340 85");svg.setAttribute("width","100%");svg.setAttribute("role","img");svg.setAttribute("aria-label","Native relative lift and 95% credible interval");svg.style.maxWidth="640px";
